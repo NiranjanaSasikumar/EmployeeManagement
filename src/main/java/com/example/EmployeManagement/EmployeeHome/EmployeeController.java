@@ -37,11 +37,13 @@ public class EmployeeController {
         return service.getEmployeeById(id);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/{id}/{field}/{value}")
     public String updateEmployee(
-            @RequestBody Employee employee) {
+            @PathVariable Integer id,
+            @PathVariable String field,
+            @PathVariable String value) {
 
-        return service.updateEmployee(employee);
+        return service.updateEmployee(id, field, value);
     }
 
     @DeleteMapping("/{id}")
