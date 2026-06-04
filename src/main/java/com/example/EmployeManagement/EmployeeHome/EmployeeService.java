@@ -22,6 +22,22 @@ public class EmployeeService {
         return "Employee created successfully.";
     }
 
+    public String createMultipleEmployees(List<Employee> employees) {
+
+        for(Employee employee : employees) {
+
+            if(repository.existsById(employee.getId())) {
+
+                return "Employee with ID "
+                        + employee.getId()
+                        + " already exists";
+            }
+        }
+        repository.saveAll(employees);
+        return "Employees created successfully";
+    }
+
+
     public List<Employee> getAllEmployees() {
 
         return repository.findAll();

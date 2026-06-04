@@ -19,6 +19,11 @@ public class EmployeeController {
         return service.createEmployee(employee);
     }
 
+    @PostMapping("/create/multiple")
+    public String createMultipleEmployees(@RequestBody List<Employee> employees) {
+        return service.createMultipleEmployees(employees);
+    }
+
     @GetMapping("/all")
     public List<Employee> getAllEmployees() {
 
