@@ -19,6 +19,11 @@ public class EmployeeController {
         return service.createEmployee(employee);
     }
 
+    @PostMapping("/create/multiple")
+    public String createMultipleEmployees(@RequestBody List<Employee> employees) {
+        return service.createMultipleEmployees(employees);
+    }
+
     @GetMapping("/all")
     public List<Employee> getAllEmployees() {
 
@@ -32,11 +37,13 @@ public class EmployeeController {
         return service.getEmployeeById(id);
     }
 
-    @PutMapping("/update")
-    public String updateEmployee(
+
+    @PutMapping("/update/{id}")
+    public Employee updateEmployee(
+            @PathVariable Integer id,
             @RequestBody Employee employee) {
 
-        return service.updateEmployee(employee);
+        return service.updateEmployee(id, employee);
     }
 
     @DeleteMapping("/{id}")

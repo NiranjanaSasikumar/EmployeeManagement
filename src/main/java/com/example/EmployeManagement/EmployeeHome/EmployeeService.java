@@ -22,6 +22,22 @@ public class EmployeeService {
         return "Employee created successfully.";
     }
 
+    public String createMultipleEmployees(List<Employee> employees) {
+
+        for(Employee employee : employees) {
+
+            if(repository.existsById(employee.getId())) {
+
+                return "Employee with ID "
+                        + employee.getId()
+                        + " already exists";
+            }
+        }
+        repository.saveAll(employees);
+        return "Employees created successfully";
+    }
+
+
     public List<Employee> getAllEmployees() {
 
         return repository.findAll();
@@ -35,14 +51,36 @@ public class EmployeeService {
         return employee.orElse(null);
     }
 
-    public String updateEmployee(Employee employee) {
+    public Employee updateEmployee(
+            Integer id,
+            Employee updatedEmployee) {
 
-        if(!repository.existsById(employee.getId())) {
-            return "Employee not found";
+        Employee employee =
+                repository.findById(id).orElse(null);
+
+        if(employee == null) {
+            return null;
         }
 
-        repository.save(employee);
-        return "Employee updated successfully";
+        if(updatedEmployee.getName() != null) {
+            employee.setName(updatedEmployee.getName());
+        }
+
+        if(updatedEmployee.getDepartment() != null) {
+            employee.setDepartment(
+                    updatedEmployee.getDepartment());
+        }
+
+        if(updatedEmployee.getAge() != null) {
+            employee.setAge(updatedEmployee.getAge());
+        }
+
+        if(updatedEmployee.getSalary() != null) {
+            employee.setSalary(
+                    updatedEmployee.getSalary());
+        }
+
+        return repository.save(employee);
     }
 
     public String deleteEmployee(Integer id) {
