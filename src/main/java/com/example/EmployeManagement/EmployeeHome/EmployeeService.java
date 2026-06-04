@@ -51,43 +51,36 @@ public class EmployeeService {
         return employee.orElse(null);
     }
 
-    public String updateEmployee(
+    public Employee updateEmployee(
             Integer id,
-            String field,
-            String value) {
+            Employee updatedEmployee) {
 
         Employee employee =
                 repository.findById(id).orElse(null);
 
         if(employee == null) {
-            return "Employee not found";
+            return null;
         }
 
-        switch(field.toLowerCase()) {
-
-            case "name":
-                employee.setName(value);
-                break;
-
-            case "department":
-                employee.setDepartment(value);
-                break;
-
-            case "age":
-                employee.setAge(Integer.parseInt(value));
-                break;
-
-            case "salary":
-                employee.setSalary(Double.parseDouble(value));
-                break;
-
-            default:
-                return "Invalid field";
+        if(updatedEmployee.getName() != null) {
+            employee.setName(updatedEmployee.getName());
         }
 
-        repository.save(employee);
+        if(updatedEmployee.getDepartment() != null) {
+            employee.setDepartment(
+                    updatedEmployee.getDepartment());
+        }
 
-        return "Employee updated successfully";
+        if(updatedEmployee.getAge() != null) {
+            employee.setAge(updatedEmployee.getAge());
+        }
+
+        if(updatedEmployee.getSalary() != null) {
+            employee.setSalary(
+                    updatedEmployee.getSalary());
+        }
+
+        return repository.save(employee);
     }
 
     public String deleteEmployee(Integer id) {
