@@ -1,5 +1,7 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.DTO.EmployeeDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,27 +16,26 @@ public class EmployeeController {
 
     @PostMapping("/create")
     public String createEmployee(
-            @RequestBody Employee employee) {
+            @Valid @RequestBody Employee employee) {
 
         return service.createEmployee(employee);
     }
 
     @PostMapping("/create/multiple")
-    public String createMultipleEmployees(@RequestBody List<Employee> employees) {
+    public String createMultipleEmployees(@Valid @RequestBody List<Employee> employees) {
         return service.createMultipleEmployees(employees);
     }
 
     @GetMapping("/all")
-    public List<Employee> getAllEmployees() {
+    public List<EmployeeDTO> getAllEmployees() {
 
         return service.getAllEmployees();
     }
 
     @GetMapping("/{id}")
-    public Employee getEmployeeById(
-            @PathVariable Integer id) {
-
-        return service.getEmployeeById(id);
+    public EmployeeDTO getEmployeeById(@PathVariable Integer id) {
+        return
+                service.getEmployeeById(id);
     }
 
 
