@@ -15,21 +15,27 @@ public class EmployeeController {
     private EmployeeService service;
 
     @PostMapping("/create")
-    public String createEmployee(
+    public EmployeeDTO createEmployee(
             @Valid @RequestBody Employee employee) {
 
         return service.createEmployee(employee);
     }
 
     @PostMapping("/create/multiple")
-    public String createMultipleEmployees(@Valid @RequestBody List<Employee> employees) {
+    public List<EmployeeDTO> createMultipleEmployees(
+            @Valid @RequestBody List<Employee> employees) {
+
         return service.createMultipleEmployees(employees);
     }
 
     @GetMapping("/all")
-    public List<EmployeeDTO> getAllEmployees() {
+    public List<EmployeeDTO> getAllEmployees(@RequestParam(required = false , defaultValue = "1") int page,
+                                             @RequestParam(required = false , defaultValue = "10") int size,
+                                             @RequestParam(required = false , defaultValue = "id") String sortBy,
+                                             @RequestParam(required = false , defaultValue = "asc") String direction) {
 
-        return service.getAllEmployees();
+        return service.getAllEmployees(page-1, size, sortBy, direction);
+
     }
 
     @GetMapping("/{id}")

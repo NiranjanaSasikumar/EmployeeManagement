@@ -4,6 +4,10 @@ import com.example.EmployeManagement.DTO.EmployeeDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -57,8 +61,11 @@ public class EmployeeService {
     }
 
 
-    public String createEmployee(Employee employee) {
-        logger.info("Received request to create employee with ID {}", employee.getId());
+    public EmployeeDTO createEmployee(Employee employee) {
+
+        logger.info("Received request to create employee with ID {}",
+                employee.getId());
+
 
         if(repository.existsById(employee.getId())) {
 
@@ -74,20 +81,29 @@ public class EmployeeService {
         employee.setSalary(
                 calculateSalary(employee.getExperience())
         );
-        repository.save(employee);
-        logger.info("Employee created successfully");
-        return "Employee created successfully.";
+
+        Employee savedEmployee =
+                repository.save(employee);
+
+        logger.info("Employee created successfully with ID {}",
+                savedEmployee.getId());
+
+        return convertToDTO(savedEmployee);
     }
 
-    public String createMultipleEmployees(List<Employee> employees) {
+    public List<EmployeeDTO> createMultipleEmployees(
+            List<Employee> employees) {
 
-        logger.info("Received request to create {} employees", employees.size());
+        logger.info("Received request to create {} employees",
+                employees.size());
 
         for(Employee employee : employees) {
 
             if(repository.existsById(employee.getId())) {
 
-                logger.error("Employee with ID {} already exists", employee.getId());
+                logger.error("Employee with id {} already exists",
+                        employee.getId());
+
 
                 throw new RuntimeException(
                         "Employee with ID "
@@ -100,26 +116,56 @@ public class EmployeeService {
             );
         }
 
-        repository.saveAll(employees);
-        logger.info("{} employees created successfully", employees.size());
-        return "Employees created successfully";
+        List<Employee> savedEmployees =
+                repository.saveAll(employees);
+
+        logger.info("{} employees created successfully",
+                savedEmployees.size());
+
+        return savedEmployees.stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
 
-    public List<EmployeeDTO> getAllEmployees() {
+    public List<EmployeeDTO> getAllEmployees(int page,
+                                             int size,
+                                             String sortBy,
+                                             String direction) {
 
-        List<Employee> employees = repository.findAll();
+        logger.info(
+                "Fetching employees. Page: {}, Size: {}, Sort By: {}, Direction: {}",
+                page,
+                size,
+                sortBy,
+                direction);
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Page<Employee> employees =
+                repository.findAll(
+                        PageRequest.of(page, size, sort));
 
         if(employees.isEmpty()) {
 
-            logger.error("No employees found in database");
+            logger.error(
+                    "No employees found. Page: {}, Size: {}",
+                    page,
+                    size);
 
             throw new RuntimeException("No employees found");
         }
 
-        logger.info("Employees retrieved successfully");
+        logger.info(
+                "Successfully fetched {} employees from page {}",
+                employees.getNumberOfElements(),
+                page);
 
-        return employees.stream()
+
+        return employees.getContent()
+                .stream()
                 .map(this::convertToDTO)
                 .toList();
     }
