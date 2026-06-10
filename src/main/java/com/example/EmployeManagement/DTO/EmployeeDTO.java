@@ -1,5 +1,6 @@
 package com.example.EmployeManagement.DTO;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.Id;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@Schema(description = "Employee Response DTO")
 public class EmployeeDTO {
 
     @Id

@@ -1,6 +1,8 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
+import com.example.EmployeManagement.DTO.PaginationMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +24,19 @@ public class EmployeeService {
     private static final Logger logger =
             LoggerFactory.getLogger(EmployeeService.class);
 
-    public EmployeeDTO getEmployeeById(Integer id) {
+    public ApiResponse<EmployeeDTO> getEmployeeById(Integer id) {
 
         Employee employee = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         logger.info("Employee found with ID {}", id);
-        return convertToDTO(employee);
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employee retrieved successfully",
+                convertToDTO(employee),
+                null
+        );
 
     }
 
@@ -61,7 +69,7 @@ public class EmployeeService {
     }
 
 
-    public EmployeeDTO createEmployee(Employee employee) {
+    public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
         logger.info("Received request to create employee with ID {}",
                 employee.getId());
@@ -88,10 +96,16 @@ public class EmployeeService {
         logger.info("Employee created successfully with ID {}",
                 savedEmployee.getId());
 
-        return convertToDTO(savedEmployee);
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employee created successfully",
+                convertToDTO(savedEmployee),
+                null
+        );
+
     }
 
-    public List<EmployeeDTO> createMultipleEmployees(
+    public ApiResponse<List<EmployeeDTO>> createMultipleEmployees(
             List<Employee> employees) {
 
         logger.info("Received request to create {} employees",
@@ -122,13 +136,21 @@ public class EmployeeService {
         logger.info("{} employees created successfully",
                 savedEmployees.size());
 
-        return savedEmployees.stream()
-                .map(this::convertToDTO)
-                .toList();
+        List<EmployeeDTO> employeeDTOs =
+                savedEmployees.stream()
+                        .map(this::convertToDTO)
+                        .toList();
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employees created successfully",
+                employeeDTOs,
+                null
+        );
     }
 
 
-    public List<EmployeeDTO> getAllEmployees(int page,
+    public ApiResponse<Page<EmployeeDTO>> getAllEmployees(int page,
                                              int size,
                                              String sortBy,
                                              String direction) {
@@ -158,16 +180,30 @@ public class EmployeeService {
             throw new RuntimeException("No employees found");
         }
 
+        Page<EmployeeDTO> employeeDTOPage =
+                employees.map(this::convertToDTO);
+
+        PaginationMetadata metadata =
+                new PaginationMetadata(
+                        employeeDTOPage.getNumber() + 1,
+                        employeeDTOPage.getTotalPages(),
+                        employeeDTOPage.getTotalElements(),
+                        employeeDTOPage.getSize()
+                );
+
         logger.info(
                 "Successfully fetched {} employees from page {}",
                 employees.getNumberOfElements(),
                 page);
 
 
-        return employees.getContent()
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employees retrieved successfully",
+                employeeDTOPage,
+                metadata
+        );
+
     }
 
     public Employee updateEmployee(

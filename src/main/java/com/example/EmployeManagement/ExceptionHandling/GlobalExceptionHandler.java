@@ -1,5 +1,7 @@
 package com.example.EmployeManagement.ExceptionHandling;
 
+import com.example.EmployeManagement.DTO.ApiResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -29,8 +32,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public String handleRuntimeException(RuntimeException ex) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse<Object>
+    handleRuntimeException(
+            RuntimeException ex) {
 
-        return ex.getMessage();
+        return new ApiResponse<>(
+                "ERROR",
+                ex.getMessage(),
+                null,
+                null
+        );
     }
 }
