@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 import java.time.LocalDate;
-
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +36,10 @@ public class Employee {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @Min(value = 0, message = "Experience cannot be negative")
+    @NotNull(message = "Date of Joining cannot be null")
+    @PastOrPresent(message = "Date of joining cannot be in the future")
+    private LocalDate dateOfJoining;
+
     private Integer experience;
 
 
@@ -51,6 +53,7 @@ public class Employee {
                     Integer age,
                     LocalDate dateOfBirth,
                     String password,
+                    LocalDate dateOfJoining,
                     Integer experience,
                     Double salary) {
         this.id = id;
@@ -59,6 +62,7 @@ public class Employee {
         this.age = age;
         this.dateOfBirth = dateOfBirth;
         this.password = password;
+        this.dateOfJoining = dateOfJoining;
         this.experience = experience;
         this.salary = salary;
 

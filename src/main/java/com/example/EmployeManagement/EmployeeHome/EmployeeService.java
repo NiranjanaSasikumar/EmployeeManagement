@@ -3,6 +3,7 @@ package com.example.EmployeManagement.EmployeeHome;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.DTO.PaginationMetadata;
+import com.example.EmployeManagement.Util.ExperienceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -24,21 +27,6 @@ public class EmployeeService {
     private static final Logger logger =
             LoggerFactory.getLogger(EmployeeService.class);
 
-    public ApiResponse<EmployeeDTO> getEmployeeById(Integer id) {
-
-        Employee employee = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        logger.info("Employee found with ID {}", id);
-
-        return new ApiResponse<>(
-                "SUCCESS",
-                "Employee retrieved successfully",
-                convertToDTO(employee),
-                null
-        );
-
-    }
 
     private EmployeeDTO convertToDTO(Employee employee) {
 
@@ -49,25 +37,48 @@ public class EmployeeService {
         dto.setDepartment(employee.getDepartment());
         dto.setAge(employee.getAge());
         dto.setDateOfBirth(employee.getDateOfBirth());
+        dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setExperience(employee.getExperience());
         dto.setSalary(employee.getSalary());
 
         return dto;
     }
 
-    private Double calculateSalary(Integer experience) {
+    public Double calculateSalary(
+            String department,
+            Integer experience) {
 
-        if(experience <= 2) {
-            return 25000.0;
+        double baseSalary;
+
+        switch (department.toUpperCase()) {
+
+            case "IT":
+                baseSalary = 50000;
+                break;
+
+            case "HR":
+                baseSalary = 40000;
+                break;
+
+            case "FINANCE":
+                baseSalary = 55000;
+                break;
+
+            case "MARKETING":
+                baseSalary = 45000;
+                break;
+
+            case "COMPUTER SCIENCE":
+                baseSalary = 60000;
+                break;
+
+            default:
+                throw new RuntimeException(
+                        "Invalid department");
         }
-        else if(experience <= 5) {
-            return 50000.0;
-        }
-        else {
-            return 80000.0;
-        }
+
+        return baseSalary + (experience * 5000);
     }
-
 
     public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
@@ -86,8 +97,15 @@ public class EmployeeService {
                             + " already exists");
         }
 
+        Integer experience =
+                ExperienceUtil.calculateExperience(
+                        employee.getDateOfJoining());
+
+        employee.setExperience(experience);
+
+
         employee.setSalary(
-                calculateSalary(employee.getExperience())
+                calculateSalary(employee.getDepartment(),employee.getExperience())
         );
 
         Employee savedEmployee =
@@ -125,8 +143,15 @@ public class EmployeeService {
                                 + " already exists");
             }
 
+            Integer experience =
+                    ExperienceUtil.calculateExperience(
+                            employee.getDateOfJoining());
+
+            employee.setExperience(experience);
+
             employee.setSalary(
-                    calculateSalary(employee.getExperience())
+
+                    calculateSalary(employee.getDepartment(),employee.getExperience())
             );
         }
 
@@ -202,6 +227,22 @@ public class EmployeeService {
                 "Employees retrieved successfully",
                 employeeDTOPage,
                 metadata
+        );
+
+    }
+
+    public ApiResponse<EmployeeDTO> getEmployeeById(Integer id) {
+
+        Employee employee = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        logger.info("Employee found with ID {}", id);
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employee retrieved successfully",
+                convertToDTO(employee),
+                null
         );
 
     }
