@@ -1,6 +1,8 @@
 package com.example.EmployeManagement.Controller;
 
 
+import com.example.EmployeManagement.Auth.AuthenticationService;
+import com.example.EmployeManagement.Auth.JwtFilter;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.EmployeeHome.Employee;
@@ -31,6 +33,12 @@ public class EmployeeControllerTest {
 
     @MockitoBean
     private EmployeeService service;
+
+    @MockitoBean
+    private JwtFilter jwtFilter;
+
+    @MockitoBean
+    private AuthenticationService authenticationService;
 
     @Test
     void createEmployee_Success() throws Exception {

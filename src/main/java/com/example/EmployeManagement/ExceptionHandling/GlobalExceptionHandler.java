@@ -3,6 +3,7 @@ package com.example.EmployeManagement.ExceptionHandling;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,4 +45,14 @@ public class GlobalExceptionHandler {
                 null
         );
     }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<String> handleInvalidTokenException(
+            InvalidTokenException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ex.getMessage());
+    }
+
 }
