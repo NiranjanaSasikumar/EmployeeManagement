@@ -1,5 +1,6 @@
 package com.example.EmployeManagement.Auth;
 
+import com.example.EmployeManagement.User.SignupRequest;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,5 +18,12 @@ public class AuthenticationController {
     @PostMapping("/generate")
     public AuthenticationEntity generateToken() {
         return service.generateToken();
+    }
+
+    @PostMapping("/signup")
+    public AuthenticationEntity signup(
+            @RequestBody SignupRequest request) {
+
+        return service.signup(request);
     }
 }
