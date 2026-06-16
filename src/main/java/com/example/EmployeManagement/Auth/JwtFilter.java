@@ -72,8 +72,17 @@ public class JwtFilter
             } catch (InvalidTokenException ex) {
 
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("text/plain");
-                response.getWriter().write(ex.getMessage());
+                response.setContentType("application/json");
+
+                String jsonResponse = """
+                {
+                     "success": false,
+                     "message": "%s",
+                     "data": null
+                }
+                """.formatted(ex.getMessage());
+
+                response.getWriter().write(jsonResponse);
                 return;
             }
         }
