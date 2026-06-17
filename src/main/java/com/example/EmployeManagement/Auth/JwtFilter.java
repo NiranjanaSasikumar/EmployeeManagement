@@ -1,10 +1,13 @@
 package com.example.EmployeManagement.Auth;
 
+import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.ExceptionHandling.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.
@@ -67,18 +70,21 @@ public class JwtFilter
 
             } catch (InvalidTokenException ex) {
 
+                ApiResponse<Object> apiResponse = new ApiResponse<>(
+                        "FAILURE",
+                        ex.getMessage(),
+                        null,
+                        null
+                );
+
+                ObjectMapper objectMapper = new ObjectMapper();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
 
-                String jsonResponse = """
-                {
-                     "success": false,
-                     "message": "%s",
-                     "data": null
-                }
-                """.formatted(ex.getMessage());
+                response.getWriter().write(
+                        objectMapper.writeValueAsString(apiResponse)
+                );
 
-                response.getWriter().write(jsonResponse);
                 return;
             }
         }
