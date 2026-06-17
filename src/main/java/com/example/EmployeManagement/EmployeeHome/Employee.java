@@ -46,7 +46,6 @@ public class Employee {
 
     private Integer experience;
 
-
     private Double salary;
 
 }

@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.
         UsernamePasswordAuthenticationToken;
 
@@ -34,6 +36,9 @@ public class JwtFilter
 
     private final AuthenticationService service;
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(JwtFilter.class);
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -43,9 +48,14 @@ public class JwtFilter
 
         String authHeader = request.getHeader("Authorization");
 
+        logger.info("Incoming request: {}", request.getRequestURI());
+
         String token = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
+            logger.info("Authorization header received");
+
             token = authHeader.substring(7);
         }
 
@@ -53,7 +63,11 @@ public class JwtFilter
 
             try {
 
+                logger.info("Validating authentication token");
+
                 service.validateToken(token);
+
+                logger.info("Token validated successfully");
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -68,7 +82,13 @@ public class JwtFilter
                         .getContext()
                         .setAuthentication(authentication);
 
+                logger.info("Authentication context set successfully");
+
             } catch (InvalidTokenException ex) {
+
+                logger.error(
+                        "Token validation failed: {}",
+                        ex.getMessage());
 
                 ApiResponse<Object> apiResponse = new ApiResponse<>(
                         "FAILURE",
@@ -89,7 +109,8 @@ public class JwtFilter
             }
         }
 
-
         filterChain.doFilter(request, response);
+
+        logger.info("Request processing completed");
     }
 }
