@@ -4,6 +4,7 @@ import com.example.EmployeManagement.ExceptionHandling.InvalidTokenException;
 import com.example.EmployeManagement.User.SignupRequest;
 import com.example.EmployeManagement.User.UserEntity;
 import com.example.EmployeManagement.User.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,21 +13,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final AuthenticationRepository repository;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-
-    public AuthenticationService(
-            AuthenticationRepository repository,
-            UserRepository userRepository,
-            BCryptPasswordEncoder passwordEncoder) {
-
-        this.repository = repository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public AuthenticationEntity signup(
             SignupRequest request) {

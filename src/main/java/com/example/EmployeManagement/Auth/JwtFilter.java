@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.
         UsernamePasswordAuthenticationToken;
 
@@ -24,16 +25,11 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JwtFilter
         extends OncePerRequestFilter {
 
     private final AuthenticationService service;
-
-    public JwtFilter(
-            AuthenticationService service) {
-
-        this.service = service;
-    }
 
     @Override
     protected void doFilterInternal(

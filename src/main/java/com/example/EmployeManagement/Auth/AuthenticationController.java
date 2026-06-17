@@ -2,19 +2,15 @@ package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.User.SignupRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthenticationService service;
-
-    public AuthenticationController(
-            AuthenticationService service) {
-
-        this.service = service;
-    }
 
     @PostMapping("/generate")
     public AuthenticationEntity generateToken() {
