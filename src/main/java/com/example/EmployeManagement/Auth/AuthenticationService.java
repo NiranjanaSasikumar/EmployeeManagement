@@ -31,15 +31,10 @@ public class AuthenticationService {
                     "Username already exists");
         }
 
-        UserEntity user = new UserEntity();
-
-        user.setUsername(
-                request.getUsername());
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getPassword()));
-
+        UserEntity user = UserEntity.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .build();
         userRepository.save(user);
 
         return generateToken();
@@ -50,21 +45,18 @@ public class AuthenticationService {
 
     public AuthenticationEntity generateToken() {
 
-
-        AuthenticationEntity auth =
-                new AuthenticationEntity();
-
         String token = UUID.randomUUID().toString();
 
-        auth.setToken(token);
 
-        auth.setExpiryTime(
-                LocalDateTime.now()
-                        .plusMinutes(expiryMinutes));
+        AuthenticationEntity auth =
+                AuthenticationEntity.builder()
+                        .token(token)
+                        .expiryTime(
+                                LocalDateTime.now()
+                                        .plusMinutes(expiryMinutes))
+                        .build();
 
-        AuthenticationEntity saved = repository.save(auth);
-
-        return saved;
+        return repository.save(auth);
     }
 
     public void validateToken(String token) {
