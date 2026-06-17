@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidationException(
+    public ApiResponse<Object> handleValidationException(
             MethodArgumentNotValidException ex) {
 
         Map<String, String> errors = new HashMap<>();
@@ -29,7 +29,12 @@ public class GlobalExceptionHandler {
                                 error.getDefaultMessage()
                         ));
 
-        return errors;
+        return new ApiResponse<>(
+                "FAILURE",
+                "Validation Failed",
+                errors,
+                null
+        );
     }
 
     @ExceptionHandler(RuntimeException.class)
