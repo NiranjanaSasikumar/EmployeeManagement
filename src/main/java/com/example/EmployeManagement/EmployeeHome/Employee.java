@@ -48,4 +48,8 @@ public class Employee {
 
     private Double salary;
 
+    private String email;
+
+    private String phoneNo;
+
 }

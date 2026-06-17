@@ -1,9 +1,9 @@
 package com.example.EmployeManagement.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
 
-import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 
-@Entity
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,7 +19,6 @@ import java.time.LocalDate;
 @Schema(description = "Employee Response DTO")
 public class EmployeeDTO {
 
-    @Id
     private Integer id;
     private String name;
     private String department;
@@ -29,5 +27,7 @@ public class EmployeeDTO {
     private LocalDate dateOfJoining;
     private Integer experience;
     private Double salary;
+    private String email;
+    private String phoneNo;
 
 }
