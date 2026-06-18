@@ -85,6 +85,42 @@ public class EmployeeService {
         return baseSalary + (experience * 5000);
     }
 
+    private void validateEmail(String email) {
+
+        logger.info("Validating employee email");
+
+        if (email == null ||
+                !email.matches(
+                        "^[A-Za-z0-9+_.-]+@(.+)$")) {
+
+            logger.error(
+                    "Email validation failed for value: {}",
+                    email);
+
+            throw new RuntimeException(
+                    "Invalid email format");
+        }
+        logger.info("Email validation successful");
+    }
+
+    private void validatePhoneNo(String phoneNo) {
+
+        logger.info("Validating employee phone number");
+
+        if (phoneNo == null ||
+                !phoneNo.matches(
+                        "^[6-9][0-9]{9}$")) {
+
+            logger.error(
+                    "Phone number validation failed for value: {}",
+                    phoneNo);
+
+            throw new RuntimeException(
+                    "Invalid phone number");
+        }
+        logger.info("Phone number validation successful");
+    }
+
     public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
         logger.info("Received request to create employee with ID {}",
@@ -112,6 +148,9 @@ public class EmployeeService {
         employee.setSalary(
                 calculateSalary(employee.getDepartment(),employee.getExperience())
         );
+
+        validateEmail(employee.getEmail());
+        validatePhoneNo(employee.getPhoneNo());
 
         employee.setEmail(
                 encryptionUtil.encrypt(
@@ -166,6 +205,9 @@ public class EmployeeService {
 
                     calculateSalary(employee.getDepartment(),employee.getExperience())
             );
+
+            validateEmail(employee.getEmail());
+            validatePhoneNo(employee.getPhoneNo());
 
             employee.setEmail(
                     encryptionUtil.encrypt(
@@ -306,12 +348,20 @@ public class EmployeeService {
         }
 
         if(updatedEmployee.getEmail() != null) {
+
+            validateEmail(
+                    updatedEmployee.getEmail());
+
             employee.setEmail(
                     encryptionUtil.encrypt(
                             updatedEmployee.getEmail()));
         }
 
         if(updatedEmployee.getPhoneNo() != null) {
+
+            validatePhoneNo(
+                    updatedEmployee.getPhoneNo());
+
             employee.setPhoneNo(
                     encryptionUtil.encrypt(
                             updatedEmployee.getPhoneNo()));
