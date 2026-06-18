@@ -326,4 +326,94 @@ public class EmployeeService {
 
         return "Employee deleted successfully";
     }
+
+
+    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+
+            String name,
+            String department,
+            Integer age) {
+
+        logger.info(
+                "Search request received. Name: {}, Department: {}, Age: {}",
+                name,
+                department,
+                age);
+
+
+        List<Employee> employees;
+
+        if(name != null) {
+
+            employees =
+                    repository.findByNameContainingIgnoreCase(
+                            name);
+
+            logger.info(
+                    "Searching employees by name: {}",
+                    name);
+
+        }
+
+        else if(department != null) {
+
+            employees =
+                    repository.findByDept_NameIgnoreCase(
+                            department);
+
+            logger.info(
+                    "Searching employees by department: {}",
+                    department);
+
+        }
+
+        else if(age != null) {
+
+            employees =
+                    repository.findByAge(
+                            age);
+
+            logger.info(
+                    "Searching employees by age: {}",
+                    age);
+
+
+        }
+
+        else {
+
+            logger.error(
+                    "Search failed. No search parameter provided");
+
+            throw new RuntimeException(
+                    "Please provide at least one search parameter");
+        }
+
+        if(employees.isEmpty()) {
+
+            logger.error(
+                    "No employees found for the given search criteria");
+
+            throw new RuntimeException(
+                    "No employees found for the given search criteria");
+        }
+
+        logger.info(
+                "{} employees found",
+                employees.size());
+
+
+        List<EmployeeDTO> employeeDTOs =
+                employees.stream()
+                        .map(this::convertToDTO)
+                        .toList();
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employees found successfully",
+                employeeDTOs,
+                null
+        );
+    }
+
 }

@@ -94,4 +94,26 @@ public class EmployeeController {
 
         return service.deleteEmployee(id);
     }
+
+    @GetMapping("/search")
+    @Operation(
+            summary = "Search Employee",
+            description = "Searches employee using employee name,age,department"
+    )
+    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+
+            @RequestParam(required = false)
+            String name,
+
+            @RequestParam(required = false)
+            String department,
+
+            @RequestParam(required = false)
+            Integer age) {
+
+        return service.searchEmployees(
+                name,
+                department,
+                age);
+    }
 }
