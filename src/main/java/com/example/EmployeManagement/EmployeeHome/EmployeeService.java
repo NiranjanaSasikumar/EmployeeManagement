@@ -1,10 +1,12 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.Department.Department;
+import com.example.EmployeManagement.Department.DepartmentRepository;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -17,10 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
 
-    @Autowired
-    private EmployeeRepository repository;
+    private final EmployeeRepository repository;
+    private final DepartmentRepository departmentRepository;
 
     private static final Logger logger =
             LoggerFactory.getLogger(EmployeeService.class);
@@ -32,12 +35,13 @@ public class EmployeeService {
 
         dto.setId(employee.getId());
         dto.setName(employee.getName());
-        dto.setDepartment(employee.getDepartment());
         dto.setAge(employee.getAge());
         dto.setDateOfBirth(employee.getDateOfBirth());
         dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setExperience(employee.getExperience());
         dto.setSalary(employee.getSalary());
+        dto.setDepartment(
+                employee.getDept().getName());
 
         return dto;
     }
@@ -84,7 +88,7 @@ public class EmployeeService {
                 employee.getId());
 
 
-        if(repository.existsById(employee.getId())) {
+        if (repository.existsById(employee.getId())) {
 
             logger.error("Employee with ID {} already exists",
                     employee.getId());
@@ -101,10 +105,19 @@ public class EmployeeService {
 
         employee.setExperience(experience);
 
+        Department dept =
+                departmentRepository.findById(
+                                employee.getDept().getId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found"));
+
+        employee.setDept(dept);
 
         employee.setSalary(
-                calculateSalary(employee.getDepartment(),employee.getExperience())
-        );
+                calculateSalary(
+                        dept.getName(),
+                        employee.getExperience()));
 
         Employee savedEmployee =
                 repository.save(employee);
@@ -147,10 +160,19 @@ public class EmployeeService {
 
             employee.setExperience(experience);
 
-            employee.setSalary(
+            Department dept =
+                    departmentRepository.findById(
+                                    employee.getDept().getId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Department not found"));
 
-                    calculateSalary(employee.getDepartment(),employee.getExperience())
-            );
+            employee.setDept(dept);
+
+            employee.setSalary(
+                    calculateSalary(
+                            dept.getName(),
+                            employee.getExperience()));
         }
 
         List<Employee> savedEmployees =
@@ -260,9 +282,16 @@ public class EmployeeService {
             employee.setName(updatedEmployee.getName());
         }
 
-        if(updatedEmployee.getDepartment() != null) {
-            employee.setDepartment(
-                    updatedEmployee.getDepartment());
+        if(updatedEmployee.getDept() != null) {
+
+            Department dept =
+                    departmentRepository.findById(
+                                    updatedEmployee.getDept().getId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Department not found"));
+
+            employee.setDept(dept);
         }
 
         if(updatedEmployee.getAge() != null) {

@@ -1,16 +1,24 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.Department.Department;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 import java.time.LocalDate;
+
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Employee {
 
     @Id
@@ -23,9 +31,6 @@ public class Employee {
             message = "Name must contain only letters"
     )
     private String name;
-
-    @NotBlank(message = "Department cannot be empty")
-    private String department;
 
     @Min(value = 18, message = "Age must be at least 18")
     @Max(value = 60, message = "Age cannot exceed 60")
@@ -42,29 +47,10 @@ public class Employee {
 
     private Integer experience;
 
-
     private Double salary;
 
-    public Employee() {
-    }
+    @ManyToOne
+    @JoinColumn(name = "dept_id")
+    private Department dept;
 
-    public Employee(Integer id, String name,
-                    String department,
-                    Integer age,
-                    LocalDate dateOfBirth,
-                    String password,
-                    LocalDate dateOfJoining,
-                    Integer experience,
-                    Double salary) {
-        this.id = id;
-        this.name = name;
-        this.department = department;
-        this.age = age;
-        this.dateOfBirth = dateOfBirth;
-        this.password = password;
-        this.dateOfJoining = dateOfJoining;
-        this.experience = experience;
-        this.salary = salary;
-
-    }
 }
