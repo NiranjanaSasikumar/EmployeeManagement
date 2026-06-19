@@ -1,7 +1,11 @@
 package com.example.EmployeManagement.ExceptionHandling;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
+import com.example.EmployeManagement.EmployeeHome.EmployeeService;
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,10 +18,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(ExceptionHandler.class);
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidationException(
+    public ApiResponse<Object> handleValidationException(
             MethodArgumentNotValidException ex) {
+
 
         Map<String, String> errors = new HashMap<>();
 
@@ -29,7 +37,12 @@ public class GlobalExceptionHandler {
                                 error.getDefaultMessage()
                         ));
 
-        return errors;
+        return new ApiResponse<>(
+                "FAILURE",
+                "Validation Failed",
+                errors,
+                null
+        );
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -37,6 +50,8 @@ public class GlobalExceptionHandler {
     public ApiResponse<Object>
     handleRuntimeException(
             RuntimeException ex) {
+
+        logger.error("Unhandled RuntimeException: {}", ex.getMessage(), ex);
 
         return new ApiResponse<>(
                 "ERROR",
@@ -46,13 +61,5 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<String> handleInvalidTokenException(
-            InvalidTokenException ex) {
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ex.getMessage());
-    }
 
 }

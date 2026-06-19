@@ -4,7 +4,7 @@ import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -17,10 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
 
-    @Autowired
-    private EmployeeRepository repository;
+    private final EmployeeRepository repository;
+    private final EncryptionUtil encryptionUtil;
 
     private static final Logger logger =
             LoggerFactory.getLogger(EmployeeService.class);
@@ -38,7 +39,13 @@ public class EmployeeService {
         dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setExperience(employee.getExperience());
         dto.setSalary(employee.getSalary());
+        dto.setEmail(
+                encryptionUtil.decrypt(
+                        employee.getEmail()));
 
+        dto.setPhoneNo(
+                encryptionUtil.decrypt(
+                        employee.getPhoneNo()));
         return dto;
     }
 
@@ -78,6 +85,42 @@ public class EmployeeService {
         return baseSalary + (experience * 5000);
     }
 
+    private void validateEmail(String email) {
+
+        logger.info("Validating employee email");
+
+        if (email == null ||
+                !email.matches(
+                        "^[A-Za-z0-9+_.-]+@(.+)$")) {
+
+            logger.error(
+                    "Email validation failed for value: {}",
+                    email);
+
+            throw new RuntimeException(
+                    "Invalid email format");
+        }
+        logger.info("Email validation successful");
+    }
+
+    private void validatePhoneNo(String phoneNo) {
+
+        logger.info("Validating employee phone number");
+
+        if (phoneNo == null ||
+                !phoneNo.matches(
+                        "^[6-9][0-9]{9}$")) {
+
+            logger.error(
+                    "Phone number validation failed for value: {}",
+                    phoneNo);
+
+            throw new RuntimeException(
+                    "Invalid phone number");
+        }
+        logger.info("Phone number validation successful");
+    }
+
     public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
         logger.info("Received request to create employee with ID {}",
@@ -105,6 +148,17 @@ public class EmployeeService {
         employee.setSalary(
                 calculateSalary(employee.getDepartment(),employee.getExperience())
         );
+
+        validateEmail(employee.getEmail());
+        validatePhoneNo(employee.getPhoneNo());
+
+        employee.setEmail(
+                encryptionUtil.encrypt(
+                        employee.getEmail()));
+
+        employee.setPhoneNo(
+                encryptionUtil.encrypt(
+                        employee.getPhoneNo()));
 
         Employee savedEmployee =
                 repository.save(employee);
@@ -151,6 +205,17 @@ public class EmployeeService {
 
                     calculateSalary(employee.getDepartment(),employee.getExperience())
             );
+
+            validateEmail(employee.getEmail());
+            validatePhoneNo(employee.getPhoneNo());
+
+            employee.setEmail(
+                    encryptionUtil.encrypt(
+                            employee.getEmail()));
+
+            employee.setPhoneNo(
+                    encryptionUtil.encrypt(
+                            employee.getPhoneNo()));
         }
 
         List<Employee> savedEmployees =
@@ -280,6 +345,26 @@ public class EmployeeService {
         if(updatedEmployee.getExperience() != null) {
             employee.setExperience(
                     updatedEmployee.getExperience());
+        }
+
+        if(updatedEmployee.getEmail() != null) {
+
+            validateEmail(
+                    updatedEmployee.getEmail());
+
+            employee.setEmail(
+                    encryptionUtil.encrypt(
+                            updatedEmployee.getEmail()));
+        }
+
+        if(updatedEmployee.getPhoneNo() != null) {
+
+            validatePhoneNo(
+                    updatedEmployee.getPhoneNo());
+
+            employee.setPhoneNo(
+                    encryptionUtil.encrypt(
+                            updatedEmployee.getPhoneNo()));
         }
 
         logger.info("Employee updated successfully with ID {}", id);

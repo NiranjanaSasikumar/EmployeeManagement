@@ -5,12 +5,16 @@ import jakarta.persistence.Id;
 
 import java.time.LocalDate;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Employee {
 
     @Id
@@ -42,29 +46,10 @@ public class Employee {
 
     private Integer experience;
 
-
     private Double salary;
 
-    public Employee() {
-    }
+    private String email;
 
-    public Employee(Integer id, String name,
-                    String department,
-                    Integer age,
-                    LocalDate dateOfBirth,
-                    String password,
-                    LocalDate dateOfJoining,
-                    Integer experience,
-                    Double salary) {
-        this.id = id;
-        this.name = name;
-        this.department = department;
-        this.age = age;
-        this.dateOfBirth = dateOfBirth;
-        this.password = password;
-        this.dateOfJoining = dateOfJoining;
-        this.experience = experience;
-        this.salary = salary;
+    private String phoneNo;
 
-    }
 }
