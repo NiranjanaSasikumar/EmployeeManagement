@@ -52,5 +52,8 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "dept_id")
     private Department dept;
+    private String email;
+
+    private String phoneNo;
 
 }
