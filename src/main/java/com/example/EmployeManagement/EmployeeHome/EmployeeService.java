@@ -7,6 +7,7 @@ import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -341,13 +342,14 @@ public class EmployeeService {
                 age);
 
 
-        List<Employee> employees;
+        Specification<Employee> spec =
+                Specification.allOf();
 
         if(name != null) {
 
-            employees =
-                    repository.findByNameContainingIgnoreCase(
-                            name);
+            spec = spec.and(
+                    EmployeeSpecification.hasName(
+                            name));
 
             logger.info(
                     "Searching employees by name: {}",
@@ -355,11 +357,11 @@ public class EmployeeService {
 
         }
 
-        else if(department != null) {
+        if(department != null) {
 
-            employees =
-                    repository.findByDept_NameIgnoreCase(
-                            department);
+            spec = spec.and(
+                    EmployeeSpecification.hasDepartment(
+                            department));
 
             logger.info(
                     "Searching employees by department: {}",
@@ -367,11 +369,12 @@ public class EmployeeService {
 
         }
 
-        else if(age != null) {
+        if(age != null) {
 
-            employees =
-                    repository.findByAge(
-                            age);
+            spec = spec.and(
+                    EmployeeSpecification.hasAge(
+                            age));
+
 
             logger.info(
                     "Searching employees by age: {}",
@@ -380,7 +383,9 @@ public class EmployeeService {
 
         }
 
-        else {
+         if(name == null
+                 && department == null
+                 && age == null){
 
             logger.error(
                     "Search failed. No search parameter provided");
@@ -388,6 +393,9 @@ public class EmployeeService {
             throw new RuntimeException(
                     "Please provide at least one search parameter");
         }
+
+        List<Employee> employees =
+                repository.findAll(spec);
 
         if(employees.isEmpty()) {
 
@@ -410,7 +418,7 @@ public class EmployeeService {
 
         return new ApiResponse<>(
                 "SUCCESS",
-                "Employees found successfully",
+                employees.size() + " employee(s) found",
                 employeeDTOs,
                 null
         );
