@@ -17,7 +17,22 @@ public class DepartmentService {
             LoggerFactory.getLogger(
                     DepartmentService.class);
 
-    public ApiResponse<Department> createDepartment(
+    private DepartmentDTO convertToDTO(
+            Department department) {
+
+        DepartmentDTO dto =
+                new DepartmentDTO();
+
+        dto.setId(
+                department.getId());
+
+        dto.setName(
+                department.getName());
+
+        return dto;
+    }
+
+    public ApiResponse<DepartmentDTO> createDepartment(
             Department department) {
 
         logger.info(
@@ -45,18 +60,21 @@ public class DepartmentService {
         return new ApiResponse<>(
                 "SUCCESS",
                 "Department created successfully",
-                savedDepartment,
+                convertToDTO(savedDepartment),
                 null
         );
     }
 
-    public ApiResponse<List<Department>> getAllDepartments() {
+    public ApiResponse<List<DepartmentDTO>> getAllDepartments() {
 
         logger.info(
                 "Fetching all departments");
 
-        List<Department> departments =
-                repository.findAll();
+        List<DepartmentDTO> departments =
+                repository.findAll()
+                        .stream()
+                        .map(this::convertToDTO)
+                        .toList();
 
         return new ApiResponse<>(
                 "SUCCESS",
@@ -66,7 +84,7 @@ public class DepartmentService {
         );
     }
 
-    public ApiResponse<Department> getDepartmentById(Integer id) {
+    public ApiResponse<DepartmentDTO> getDepartmentById(Integer id) {
 
         logger.info(
                 "Fetching department with ID {}",
@@ -87,12 +105,12 @@ public class DepartmentService {
         return new ApiResponse<>(
                 "SUCCESS",
                 "Department fetched successfully",
-                department,
+                convertToDTO(department),
                 null
         );
     }
 
-    public ApiResponse<Department> updateDepartment(
+    public ApiResponse<DepartmentDTO> updateDepartment(
             Integer id,
             Department department) {
 
@@ -125,7 +143,7 @@ public class DepartmentService {
         return new ApiResponse<>(
                 "SUCCESS",
                 "Department updated successfully",
-                updatedDepartment,
+                convertToDTO(updatedDepartment),
                 null
         );
     }

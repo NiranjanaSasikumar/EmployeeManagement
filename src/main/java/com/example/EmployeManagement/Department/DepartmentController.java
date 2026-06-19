@@ -13,7 +13,7 @@ public class DepartmentController {
     private final DepartmentService service;
 
     @PostMapping("/create")
-    public ApiResponse<Department> createDepartment(
+    public ApiResponse<DepartmentDTO> createDepartment(
             @Valid @RequestBody Department department) {
 
         return service.createDepartment(department);
