@@ -1,10 +1,13 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.Department.Department;
+import com.example.EmployeManagement.Department.DepartmentRepository;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
+Simport org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class EmployeeService {
 
     private final EmployeeRepository repository;
+    private final DepartmentRepository departmentRepository;
     private final EncryptionUtil encryptionUtil;
 
     private static final Logger logger =
@@ -33,12 +37,13 @@ public class EmployeeService {
 
         dto.setId(employee.getId());
         dto.setName(employee.getName());
-        dto.setDepartment(employee.getDepartment());
         dto.setAge(employee.getAge());
         dto.setDateOfBirth(employee.getDateOfBirth());
         dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setExperience(employee.getExperience());
         dto.setSalary(employee.getSalary());
+        dto.setDepartment(
+                employee.getDept().getName());
         dto.setEmail(
                 encryptionUtil.decrypt(
                         employee.getEmail()));
@@ -127,7 +132,7 @@ public class EmployeeService {
                 employee.getId());
 
 
-        if(repository.existsById(employee.getId())) {
+        if (repository.existsById(employee.getId())) {
 
             logger.error("Employee with ID {} already exists",
                     employee.getId());
@@ -144,10 +149,19 @@ public class EmployeeService {
 
         employee.setExperience(experience);
 
+        Department dept =
+                departmentRepository.findById(
+                                employee.getDept().getId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found"));
+
+        employee.setDept(dept);
 
         employee.setSalary(
-                calculateSalary(employee.getDepartment(),employee.getExperience())
-        );
+                calculateSalary(
+                        dept.getName(),
+                        employee.getExperience()));
 
         validateEmail(employee.getEmail());
         validatePhoneNo(employee.getPhoneNo());
@@ -201,10 +215,19 @@ public class EmployeeService {
 
             employee.setExperience(experience);
 
-            employee.setSalary(
+            Department dept =
+                    departmentRepository.findById(
+                                    employee.getDept().getId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Department not found"));
 
-                    calculateSalary(employee.getDepartment(),employee.getExperience())
-            );
+            employee.setDept(dept);
+
+            employee.setSalary(
+                    calculateSalary(
+                            dept.getName(),
+                            employee.getExperience()));
 
             validateEmail(employee.getEmail());
             validatePhoneNo(employee.getPhoneNo());
@@ -325,9 +348,16 @@ public class EmployeeService {
             employee.setName(updatedEmployee.getName());
         }
 
-        if(updatedEmployee.getDepartment() != null) {
-            employee.setDepartment(
-                    updatedEmployee.getDepartment());
+        if(updatedEmployee.getDept() != null) {
+
+            Department dept =
+                    departmentRepository.findById(
+                                    updatedEmployee.getDept().getId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Department not found"));
+
+            employee.setDept(dept);
         }
 
         if(updatedEmployee.getAge() != null) {
@@ -382,4 +412,101 @@ public class EmployeeService {
 
         return "Employee deleted successfully";
     }
+
+
+    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+
+            String name,
+            String department,
+            Integer age) {
+
+        logger.info(
+                "Search request received. Name: {}, Department: {}, Age: {}",
+                name,
+                department,
+                age);
+
+
+        Specification<Employee> spec =
+                Specification.allOf();
+
+        if(name != null) {
+
+            spec = spec.and(
+                    EmployeeSpecification.hasName(
+                            name));
+
+            logger.info(
+                    "Searching employees by name: {}",
+                    name);
+
+        }
+
+        if(department != null) {
+
+            spec = spec.and(
+                    EmployeeSpecification.hasDepartment(
+                            department));
+
+            logger.info(
+                    "Searching employees by department: {}",
+                    department);
+
+        }
+
+        if(age != null) {
+
+            spec = spec.and(
+                    EmployeeSpecification.hasAge(
+                            age));
+
+
+            logger.info(
+                    "Searching employees by age: {}",
+                    age);
+
+
+        }
+
+         if(name == null
+                 && department == null
+                 && age == null){
+
+            logger.error(
+                    "Search failed. No search parameter provided");
+
+            throw new RuntimeException(
+                    "Please provide at least one search parameter");
+        }
+
+        List<Employee> employees =
+                repository.findAll(spec);
+
+        if(employees.isEmpty()) {
+
+            logger.error(
+                    "No employees found for the given search criteria");
+
+            throw new RuntimeException(
+                    "No employees found for the given search criteria");
+        }
+
+        logger.info(
+                "{} employees found",
+                employees.size());
+
+
+        List<EmployeeDTO> employeeDTOs =
+                employees.stream()
+                        .map(this::convertToDTO)
+                        .toList();
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                employees.size() + " employee(s) found",
+                employeeDTOs,
+                null
+        );
+    }
+
 }

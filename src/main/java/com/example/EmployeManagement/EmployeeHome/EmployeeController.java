@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
@@ -95,5 +94,27 @@ public class EmployeeController {
             @PathVariable Integer id) {
 
         return service.deleteEmployee(id);
+    }
+
+    @GetMapping("/search")
+    @Operation(
+            summary = "Search Employee",
+            description = "Searches employee using employee name,age,department"
+    )
+    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+
+            @RequestParam(required = false)
+            String name,
+
+            @RequestParam(required = false)
+            String department,
+
+            @RequestParam(required = false)
+            Integer age) {
+
+        return service.searchEmployees(
+                name,
+                department,
+                age);
     }
 }

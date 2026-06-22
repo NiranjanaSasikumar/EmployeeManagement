@@ -1,9 +1,13 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.Department.Department;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 import java.time.LocalDate;
+
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,9 +32,6 @@ public class Employee {
     )
     private String name;
 
-    @NotBlank(message = "Department cannot be empty")
-    private String department;
-
     @Min(value = 18, message = "Age must be at least 18")
     @Max(value = 60, message = "Age cannot exceed 60")
     private Integer age;
@@ -48,6 +49,9 @@ public class Employee {
 
     private Double salary;
 
+    @ManyToOne
+    @JoinColumn(name = "dept_id")
+    private Department dept;
     private String email;
 
     private String phoneNo;
