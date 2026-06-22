@@ -13,11 +13,6 @@ public class AuthenticationController {
 
     private final AuthenticationService service;
 
-    @PostMapping("/generate")
-    public AuthenticationEntity generateToken() {
-        return service.generateToken();
-    }
-
     @PostMapping("/signup")
     public ApiResponse<String> signup(
             @Valid @RequestBody SignupRequest request) {
@@ -26,7 +21,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthenticationEntity> login(
+    public ApiResponse<Object> login(
             @RequestBody SignupRequest request) {
 
         return service.login(request);

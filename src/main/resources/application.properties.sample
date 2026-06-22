@@ -9,4 +9,5 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
-token.expiry.minutes=20
+jwt.expiry.minutes=20
+jwt.secret=myVerySecretKeyForEmployeeManagementProject2026
