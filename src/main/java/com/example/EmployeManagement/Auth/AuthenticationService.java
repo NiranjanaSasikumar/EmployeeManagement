@@ -1,5 +1,6 @@
 package com.example.EmployeManagement.Auth;
 
+import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.ExceptionHandling.InvalidTokenException;
 import com.example.EmployeManagement.User.SignupRequest;
 import com.example.EmployeManagement.User.User;
@@ -25,7 +26,7 @@ public class AuthenticationService {
     private static final Logger logger =
             LoggerFactory.getLogger(AuthenticationService.class);
 
-    public AuthenticationEntity signup(
+    public ApiResponse<String> signup(
             SignupRequest request) {
 
         logger.info(
@@ -59,7 +60,57 @@ public class AuthenticationService {
                 "User registered successfully: {}",
                 request.getUsername());
 
-        return generateToken();
+        return new ApiResponse<>(
+                "SUCCESS",
+                "User registered successfully",
+                "Signup successful",
+                null
+        );
+    }
+
+    public ApiResponse<AuthenticationEntity> login(
+            SignupRequest request){
+
+        logger.info(
+                "Login request received for username: {}",
+                request.getUsername());
+
+        User user = userRepository
+                .findByUsername(request.getUsername())
+                .orElseThrow(() -> {
+
+                    logger.error(
+                            "Login failed. Username not found: {}",
+                            request.getUsername());
+
+                    return new RuntimeException(
+                            "Invalid username or password");
+                });
+
+        if(!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
+            logger.error(
+                    "Login failed. Invalid password for username: {}",
+                    request.getUsername());
+
+            throw new RuntimeException(
+                    "Invalid username or password");
+        }
+
+        logger.info(
+                "Login successful for username: {}",
+                request.getUsername());
+
+        AuthenticationEntity token = generateToken();
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Login successful",
+                token,
+                null
+        );
     }
 
     @Value("${token.expiry.minutes}")
@@ -106,4 +157,5 @@ public class AuthenticationService {
         }
 
     }
+
 }
