@@ -35,6 +35,11 @@ public class SecurityConfig {
                         .permitAll()
 
                         .requestMatchers(
+                                HttpMethod.PUT,
+                                "/employee/*/increment")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers(
                                 HttpMethod.GET,
                                 "/employee/**",
                                 "/department/**")

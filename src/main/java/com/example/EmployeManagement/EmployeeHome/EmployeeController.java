@@ -1,8 +1,6 @@
 package com.example.EmployeManagement.EmployeeHome;
 
-import com.example.EmployeManagement.DTO.AdminEmployeeDTO;
-import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.DTO.EmployeeDTO;
+import com.example.EmployeManagement.DTO.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -116,5 +114,17 @@ public class EmployeeController {
                 name,
                 department,
                 age);
+    }
+
+    @PutMapping("/{id}/increment")
+    @Operation(
+            summary = "Increment Employee salary",
+            description = "Increment employee salary"
+    )
+    public ApiResponse<SalaryIncrementResponseDTO> incrementSalary(
+            @PathVariable Integer id,
+            @Valid @RequestBody SalaryIncrementRequestDTO request) {
+
+        return service.incrementSalary(id, request);
     }
 }

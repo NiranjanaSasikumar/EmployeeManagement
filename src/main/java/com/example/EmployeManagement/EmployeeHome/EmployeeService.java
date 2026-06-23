@@ -1,11 +1,8 @@
 package com.example.EmployeManagement.EmployeeHome;
 
-import com.example.EmployeManagement.DTO.AdminEmployeeDTO;
+import com.example.EmployeManagement.DTO.*;
 import com.example.EmployeManagement.Department.Department;
 import com.example.EmployeManagement.Department.DepartmentRepository;
-import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.DTO.EmployeeDTO;
-import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -591,6 +588,52 @@ public class EmployeeService {
                 "SUCCESS",
                 employees.size() + " employee(s) found",
                 dtoList,
+                null
+        );
+    }
+
+    public ApiResponse<SalaryIncrementResponseDTO> incrementSalary(
+            Integer id,
+            SalaryIncrementRequestDTO request) {
+
+        logger.info(
+                "Salary increment requested for employee id {}",
+                id);
+
+        Employee employee = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Employee not found with id " + id));
+
+        Double oldSalary = employee.getSalary();
+
+        Double newSalary =
+                oldSalary +
+                        (oldSalary * request.getPercentage() / 100);
+
+        employee.setSalary(newSalary);
+
+        repository.save(employee);
+
+        SalaryIncrementResponseDTO responseDTO =
+                new SalaryIncrementResponseDTO(
+                        employee.getId(),
+                        employee.getName(),
+                        oldSalary,
+                        request.getPercentage(),
+                        newSalary
+                );
+
+        logger.info(
+                "Salary updated successfully for employee id {}. Old salary: {}, New salary: {}",
+                id,
+                oldSalary,
+                newSalary);
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Salary increment applied successfully",
+                responseDTO,
                 null
         );
     }
