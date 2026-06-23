@@ -96,6 +96,7 @@ public class EmployeeController {
         return service.deleteEmployee(id);
     }
 
+
     @GetMapping("/search")
     @Operation(
             summary = "Search Employee",
@@ -110,11 +111,15 @@ public class EmployeeController {
             String department,
 
             @RequestParam(required = false)
-            Integer age) {
+            Integer age,
+
+            @RequestParam(required = false)
+            List<String> sortBy){
 
         return service.searchEmployees(
                 name,
                 department,
-                age);
+                age,
+                sortBy);
     }
 }
