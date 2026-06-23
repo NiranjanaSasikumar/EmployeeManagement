@@ -10,3 +10,6 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
 token.expiry.minutes=20
+
+employee.salary.increment.percentage=5
+employee.scheduler.cron=0 0 0 * * ?

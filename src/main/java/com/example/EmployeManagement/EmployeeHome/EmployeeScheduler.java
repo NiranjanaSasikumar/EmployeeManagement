@@ -3,6 +3,7 @@ package com.example.EmployeManagement.EmployeeHome;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +20,10 @@ public class EmployeeScheduler {
             LoggerFactory.getLogger(EmployeeScheduler.class);
 
 
-    private static final double
-            ANNUAL_INCREMENT_PERCENTAGE = 5.0;
+    @Value("${employee.salary.increment.percentage}")
+    private double annualIncrementPercentage;
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "${employee.scheduler.cron}")
     public void updateExperienceAndSalary() {
 
         logger.info(
@@ -73,7 +74,7 @@ public class EmployeeScheduler {
 
         Double incrementAmount =
                 currentSalary *
-                        (ANNUAL_INCREMENT_PERCENTAGE / 100);
+                        (annualIncrementPercentage / 100);
 
         employee.setSalary(
                 currentSalary + incrementAmount);
