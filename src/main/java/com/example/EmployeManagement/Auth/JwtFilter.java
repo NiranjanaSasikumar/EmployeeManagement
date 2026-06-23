@@ -71,7 +71,8 @@ public class JwtFilter
                 logger.info("Token validated successfully");
 
                 String username = jwtUtil.extractUsername(token);
-                String role = jwtUtil.extractRole(token);
+                String role = jwtUtil.extractRole(token).toUpperCase();
+                logger.info("Role extracted from JWT: {}", role);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(

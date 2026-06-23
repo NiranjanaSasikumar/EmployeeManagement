@@ -27,3 +27,4 @@ public class AuthenticationController {
         return service.login(request);
     }
 }
+
