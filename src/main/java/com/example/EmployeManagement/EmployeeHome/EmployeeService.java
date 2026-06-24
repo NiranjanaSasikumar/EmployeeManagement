@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -489,7 +490,8 @@ public class EmployeeService {
 
             String name,
             String department,
-            Integer age) {
+            Integer age,
+            List<String> sortBy) {
 
         logger.info(
                 "Search request received. Name: {}, Department: {}, Age: {}",
@@ -552,6 +554,84 @@ public class EmployeeService {
 
         List<Employee> employees =
                 repository.findAll(spec);
+
+        if(sortBy != null && !sortBy.isEmpty()) {
+
+            Comparator<Employee> comparator = null;
+
+            for(String sortField : sortBy) {
+
+                String[] parts = sortField.split(",");
+
+                if(parts.length != 2) {
+
+                    throw new RuntimeException(
+                            "Invalid sort format. Use field,direction");
+                }
+
+                String field =
+                        parts[0].trim().toLowerCase();
+
+                String direction =
+                        parts[1].trim().toLowerCase();
+
+                Comparator<Employee> currentComparator;
+
+                switch(field) {
+
+                    case "name":
+
+                        currentComparator =
+                                Comparator.comparing(
+                                        Employee::getName,
+                                        String.CASE_INSENSITIVE_ORDER);
+                        break;
+
+                    case "age":
+
+                        currentComparator =
+                                Comparator.comparing(
+                                        Employee::getAge);
+                        break;
+
+                    case "department":
+
+                        currentComparator =
+                                Comparator.comparing(
+                                        employee ->
+                                                employee.getDept()
+                                                        .getName(),
+                                        String.CASE_INSENSITIVE_ORDER);
+                        break;
+
+                    default:
+
+                        throw new RuntimeException(
+                                "Invalid sort field: " + field);
+                }
+
+                if(direction.equals("desc")) {
+
+                    currentComparator =
+                            currentComparator.reversed();
+
+                } else if(!direction.equals("asc")) {
+
+                    throw new RuntimeException(
+                            "Invalid sort direction: "
+                                    + direction);
+                }
+
+                comparator = comparator == null
+                        ? currentComparator
+                        : comparator.thenComparing(
+                        currentComparator);
+            }
+
+            employees = employees.stream()
+                    .sorted(comparator)
+                    .toList();
+        }
 
         if(employees.isEmpty()) {
 
