@@ -1,7 +1,6 @@
 package com.example.EmployeManagement.EmployeeHome;
 
-import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.DTO.EmployeeDTO;
+import com.example.EmployeManagement.DTO.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,7 +49,7 @@ public class EmployeeController {
             summary = "Get All Employee",
             description = "Fetches details of all employees"
     )
-    public ApiResponse<Page<EmployeeDTO>> getAllEmployees(@RequestParam(required = false , defaultValue = "1") int page,
+    public ApiResponse<Page<?>> getAllEmployees(@RequestParam(required = false , defaultValue = "1") int page,
                                                           @RequestParam(required = false , defaultValue = "10") int size,
                                                           @RequestParam(required = false , defaultValue = "id") String sortBy,
                                                           @RequestParam(required = false , defaultValue = "asc") String direction) {
@@ -65,7 +64,7 @@ public class EmployeeController {
             summary = "Get Employee By ID",
             description = "Fetch an employee using employee ID"
     )
-    public ApiResponse<EmployeeDTO> getEmployeeById(@PathVariable Integer id) {
+    public ApiResponse<Object> getEmployeeById(@PathVariable Integer id) {
         return
                 service.getEmployeeById(id);
     }
@@ -76,8 +75,7 @@ public class EmployeeController {
             summary = "Update Employee",
             description = "Updates employee details using employee ID"
     )
-
-    public Employee updateEmployee(
+    public ApiResponse<AdminEmployeeDTO> updateEmployee(
             @PathVariable Integer id,
             @RequestBody Employee employee) {
 
@@ -90,7 +88,7 @@ public class EmployeeController {
             summary = "Delete Employee",
             description = "Deletes employee using employee ID"
     )
-    public String deleteEmployee(
+    public ApiResponse<Object> deleteEmployee(
             @PathVariable Integer id) {
 
         return service.deleteEmployee(id);
@@ -102,7 +100,7 @@ public class EmployeeController {
             summary = "Search Employee",
             description = "Searches employee using employee name,age,department"
     )
-    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+    public ApiResponse<List<?>> searchEmployees(
 
             @RequestParam(required = false)
             String name,
@@ -121,5 +119,17 @@ public class EmployeeController {
                 department,
                 age,
                 sortBy);
+    }
+
+    @PutMapping("/{id}/increment")
+    @Operation(
+            summary = "Increment Employee salary",
+            description = "Increment employee salary"
+    )
+    public ApiResponse<SalaryIncrementResponseDTO> incrementSalary(
+            @PathVariable Integer id,
+            @Valid @RequestBody SalaryIncrementRequestDTO request) {
+
+        return service.incrementSalary(id, request);
     }
 }
