@@ -1,7 +1,6 @@
 package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.ExceptionHandling.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +33,7 @@ import java.util.List;
 public class JwtFilter
         extends OncePerRequestFilter {
 
-    private final AuthenticationService service;
+    private final JwtUtil jwtUtil;
 
     private static final Logger logger =
             LoggerFactory.getLogger(JwtFilter.class);
@@ -65,16 +64,22 @@ public class JwtFilter
 
                 logger.info("Validating authentication token");
 
-                service.validateToken(token);
+                if (!jwtUtil.validateToken(token)) {
+                    throw new RuntimeException("Invalid Token");
+                }
 
                 logger.info("Token validated successfully");
 
+                String username = jwtUtil.extractUsername(token);
+                String role = jwtUtil.extractRole(token).toUpperCase();
+                logger.info("Role extracted from JWT: {}", role);
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                token,
+                                username,
                                 null,
                                 List.of(
-                                        new SimpleGrantedAuthority("ROLE_USER")
+                                        new SimpleGrantedAuthority("ROLE_" + role)
                                 )
                         );
 
@@ -84,7 +89,7 @@ public class JwtFilter
 
                 logger.info("Authentication context set successfully");
 
-            } catch (InvalidTokenException ex) {
+            } catch (Exception ex) {
 
                 logger.error(
                         "Token validation failed: {}",

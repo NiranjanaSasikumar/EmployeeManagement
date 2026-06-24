@@ -3,6 +3,7 @@ package com.example.EmployeManagement.Controller;
 
 import com.example.EmployeManagement.Auth.AuthenticationService;
 import com.example.EmployeManagement.Auth.JwtFilter;
+import com.example.EmployeManagement.DTO.AdminEmployeeDTO;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
 import com.example.EmployeManagement.EmployeeHome.Employee;
@@ -137,7 +138,7 @@ public class EmployeeControllerTest {
         dto.setId(1);
         dto.setName("Arjun");
 
-        ApiResponse<EmployeeDTO> response =
+        ApiResponse<Object> response =
                 new ApiResponse<>(
                         "SUCCESS",
                         "Employee retrieved successfully",
@@ -163,7 +164,7 @@ public class EmployeeControllerTest {
         Page<EmployeeDTO> page =
                 new PageImpl<>(List.of(dto));
 
-        ApiResponse<Page<EmployeeDTO>> response =
+        ApiResponse<Page<?>> response =
                 new ApiResponse<>(
                         "SUCCESS",
                         "Employees retrieved successfully",
@@ -190,14 +191,22 @@ public class EmployeeControllerTest {
     @Test
     void updateEmployee_Success() throws Exception {
 
-        Employee employee = new Employee();
-        employee.setId(1);
-        employee.setName("Updated Arjun");
+        AdminEmployeeDTO employeeDTO = new AdminEmployeeDTO();
+        employeeDTO.setId(1);
+        employeeDTO.setName("Updated Arjun");
+
+        ApiResponse<AdminEmployeeDTO> response =
+                new ApiResponse<>(
+                        "SUCCESS",
+                        "Employee updated successfully",
+                        employeeDTO,
+                        null
+                );
 
         when(service.updateEmployee(
                 eq(1),
                 any(Employee.class)))
-                .thenReturn(employee);
+                .thenReturn(response);
 
         String employeeJson = """
             {
@@ -215,8 +224,16 @@ public class EmployeeControllerTest {
     @Test
     void deleteEmployee_Success() throws Exception {
 
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        "SUCCESS",
+                        "Employee deleted successfully",
+                        null,
+                        null
+                );
+
         when(service.deleteEmployee(1))
-                .thenReturn("Employee deleted successfully");
+                .thenReturn(response);
 
         mockMvc.perform(delete("/employee/1"))
                 .andExpect(status().isOk());

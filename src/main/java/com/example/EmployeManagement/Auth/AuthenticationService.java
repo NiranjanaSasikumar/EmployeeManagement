@@ -1,7 +1,6 @@
 package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.ExceptionHandling.InvalidTokenException;
 import com.example.EmployeManagement.User.SignupRequest;
 import com.example.EmployeManagement.User.User;
 import com.example.EmployeManagement.User.UserRepository;
@@ -13,15 +12,19 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final AuthenticationRepository repository;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    @Value("${jwt.expiry.minutes}")
+    private long expiryMinutes;
 
     private static final Logger logger =
             LoggerFactory.getLogger(AuthenticationService.class);
@@ -50,9 +53,27 @@ public class AuthenticationService {
 
         }
 
+        if(request.getRole() == null ||
+                request.getRole().isBlank()) {
+
+            throw new RuntimeException(
+                    "Role is required");
+        }
+
+        String role = request.getRole().toUpperCase();
+
+        if(!role.equals("ADMIN")
+                && !role.equals("MANAGER")
+                && !role.equals("USER")) {
+
+            throw new RuntimeException(
+                    "Invalid role");
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
                 .build();
         userRepository.save(user);
 
@@ -68,7 +89,7 @@ public class AuthenticationService {
         );
     }
 
-    public ApiResponse<AuthenticationEntity> login(
+    public ApiResponse<Object> login(
             SignupRequest request){
 
         logger.info(
@@ -103,59 +124,24 @@ public class AuthenticationService {
                 "Login successful for username: {}",
                 request.getUsername());
 
-        AuthenticationEntity token = generateToken();
+        String token = jwtUtil.generateToken(
+                user.getUsername(),
+                user.getRole());
+
+        Map<String, Object> response = new HashMap<>();
+
+        LocalDateTime expiryTime =
+                LocalDateTime.now().plusMinutes(expiryMinutes);
+
+        response.put("token", token);
+        response.put("expiresAt", expiryTime);
 
         return new ApiResponse<>(
                 "SUCCESS",
                 "Login successful",
-                token,
+                response,
                 null
         );
-    }
-
-    @Value("${token.expiry.minutes}")
-    private long expiryMinutes;
-
-    public AuthenticationEntity generateToken() {
-
-        logger.info("Generating authentication token");
-
-        String token = UUID.randomUUID().toString();
-
-
-        AuthenticationEntity auth =
-                AuthenticationEntity.builder()
-                        .token(token)
-                        .expiryTime(
-                                LocalDateTime.now()
-                                        .plusMinutes(expiryMinutes))
-                        .build();
-
-        logger.info("Token generated successfully.");
-
-        return repository.save(auth);
-    }
-
-    public void validateToken(String token) {
-
-        logger.info("Validating authentication token");
-
-        AuthenticationEntity auth =
-                repository.findByToken(token)
-                        .orElseThrow(() ->
-                                new InvalidTokenException(
-                                        "Invalid Token"));
-
-        if(auth.getExpiryTime()
-                .isBefore(LocalDateTime.now())) {
-
-            logger.error(
-                    "Token validation failed. Token expired");
-
-            throw new InvalidTokenException(
-                    "Token Expired");
-        }
-
     }
 
 }

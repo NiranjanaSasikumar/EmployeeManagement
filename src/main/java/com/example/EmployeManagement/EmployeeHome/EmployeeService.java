@@ -1,13 +1,13 @@
 package com.example.EmployeManagement.EmployeeHome;
 
+import com.example.EmployeManagement.DTO.*;
 import com.example.EmployeManagement.Department.Department;
 import com.example.EmployeManagement.Department.DepartmentRepository;
-import com.example.EmployeManagement.DTO.ApiResponse;
-import com.example.EmployeManagement.DTO.EmployeeDTO;
-import com.example.EmployeManagement.DTO.PaginationMetadata;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -41,7 +41,6 @@ public class EmployeeService {
         dto.setDateOfBirth(employee.getDateOfBirth());
         dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setExperience(employee.getExperience());
-        dto.setSalary(employee.getSalary());
         dto.setDepartment(
                 employee.getDept().getName());
         dto.setEmail(
@@ -52,6 +51,38 @@ public class EmployeeService {
                 encryptionUtil.decrypt(
                         employee.getPhoneNo()));
         return dto;
+    }
+
+    private AdminEmployeeDTO convertToAdminDTO(Employee employee) {
+
+        AdminEmployeeDTO dto = new AdminEmployeeDTO();
+
+        dto.setId(employee.getId());
+        dto.setName(employee.getName());
+        dto.setDepartment(employee.getDept().getName());
+        dto.setAge(employee.getAge());
+        dto.setDateOfBirth(employee.getDateOfBirth());
+        dto.setDateOfJoining(employee.getDateOfJoining());
+        dto.setExperience(employee.getExperience());
+        dto.setSalary(employee.getSalary());
+        dto.setEmail(employee.getEmail());
+        dto.setPhoneNo(employee.getPhoneNo());
+
+        return dto;
+    }
+
+    private String getCurrentUserRole() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        return authentication.getAuthorities()
+                .stream()
+                .findFirst()
+                .get()
+                .getAuthority();
     }
 
     public Double calculateSalary(
@@ -261,7 +292,7 @@ public class EmployeeService {
     }
 
 
-    public ApiResponse<Page<EmployeeDTO>> getAllEmployees(int page,
+    public ApiResponse<Page<?>> getAllEmployees(int page,
                                              int size,
                                              String sortBy,
                                              String direction) {
@@ -291,15 +322,26 @@ public class EmployeeService {
             throw new RuntimeException("No employees found");
         }
 
-        Page<EmployeeDTO> employeeDTOPage =
-                employees.map(this::convertToDTO);
+        String role = getCurrentUserRole();
+
+        Page<?> dtoPage;
+
+        if(role.equals("ROLE_USER")) {
+
+            dtoPage = employees.map(this::convertToDTO);
+
+        } else {
+
+            dtoPage = employees.map(this::convertToAdminDTO);
+
+        }
 
         PaginationMetadata metadata =
                 new PaginationMetadata(
-                        employeeDTOPage.getNumber() + 1,
-                        employeeDTOPage.getTotalPages(),
-                        employeeDTOPage.getTotalElements(),
-                        employeeDTOPage.getSize()
+                        dtoPage.getNumber() + 1,
+                        dtoPage.getTotalPages(),
+                        dtoPage.getTotalElements(),
+                        dtoPage.getSize()
                 );
 
         logger.info(
@@ -307,33 +349,50 @@ public class EmployeeService {
                 employees.getNumberOfElements(),
                 page);
 
-
         return new ApiResponse<>(
                 "SUCCESS",
                 "Employees retrieved successfully",
-                employeeDTOPage,
+                dtoPage,
                 metadata
         );
 
     }
 
-    public ApiResponse<EmployeeDTO> getEmployeeById(Integer id) {
+    public ApiResponse<Object> getEmployeeById(Integer id) {
 
-        Employee employee = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Employee employee =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Employee not found with id " + id
+                                ));
 
         logger.info("Employee found with ID {}", id);
+
+        String role = getCurrentUserRole();
+
+        Object dto;
+
+        if(role.equals("ROLE_USER")) {
+
+            dto = convertToDTO(employee);
+
+        } else {
+
+            dto = convertToAdminDTO(employee);
+
+        }
 
         return new ApiResponse<>(
                 "SUCCESS",
                 "Employee retrieved successfully",
-                convertToDTO(employee),
+                dto,
                 null
         );
 
     }
 
-    public Employee updateEmployee(
+    public ApiResponse<AdminEmployeeDTO> updateEmployee(
             Integer id,
             Employee updatedEmployee) {
 
@@ -399,10 +458,17 @@ public class EmployeeService {
 
         logger.info("Employee updated successfully with ID {}", id);
 
-        return repository.save(employee);
+        Employee savedEmployee = repository.save(employee);
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employee updated successfully",
+                convertToAdminDTO(savedEmployee),
+                null
+        );
     }
 
-    public String deleteEmployee(Integer id) {
+    public ApiResponse<Object> deleteEmployee(Integer id) {
 
         repository.findById(id).orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -410,11 +476,16 @@ public class EmployeeService {
 
         logger.info("Employee deleted successfully with ID {}", id);
 
-        return "Employee deleted successfully";
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Employee deleted successfully",
+                null,
+                null
+        );
     }
 
 
-    public ApiResponse<List<EmployeeDTO>> searchEmployees(
+    public ApiResponse<List<?>> searchEmployees(
 
             String name,
             String department,
@@ -496,15 +567,73 @@ public class EmployeeService {
                 employees.size());
 
 
-        List<EmployeeDTO> employeeDTOs =
-                employees.stream()
-                        .map(this::convertToDTO)
-                        .toList();
+        String role = getCurrentUserRole();
+
+        List<?> dtoList;
+
+        if(role.equals("ROLE_USER")) {
+
+            dtoList = employees.stream()
+                    .map(this::convertToDTO)
+                    .toList();
+
+        } else {
+
+            dtoList = employees.stream()
+                    .map(this::convertToAdminDTO)
+                    .toList();
+        }
 
         return new ApiResponse<>(
                 "SUCCESS",
                 employees.size() + " employee(s) found",
-                employeeDTOs,
+                dtoList,
+                null
+        );
+    }
+
+    public ApiResponse<SalaryIncrementResponseDTO> incrementSalary(
+            Integer id,
+            SalaryIncrementRequestDTO request) {
+
+        logger.info(
+                "Salary increment requested for employee id {}",
+                id);
+
+        Employee employee = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Employee not found with id " + id));
+
+        Double oldSalary = employee.getSalary();
+
+        Double newSalary =
+                oldSalary +
+                        (oldSalary * request.getPercentage() / 100);
+
+        employee.setSalary(newSalary);
+
+        repository.save(employee);
+
+        SalaryIncrementResponseDTO responseDTO =
+                new SalaryIncrementResponseDTO(
+                        employee.getId(),
+                        employee.getName(),
+                        oldSalary,
+                        request.getPercentage(),
+                        newSalary
+                );
+
+        logger.info(
+                "Salary updated successfully for employee id {}. Old salary: {}, New salary: {}",
+                id,
+                oldSalary,
+                newSalary);
+
+        return new ApiResponse<>(
+                "SUCCESS",
+                "Salary increment applied successfully",
+                responseDTO,
                 null
         );
     }
