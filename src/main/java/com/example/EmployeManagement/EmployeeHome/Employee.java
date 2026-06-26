@@ -1,13 +1,10 @@
 package com.example.EmployeManagement.EmployeeHome;
 
 import com.example.EmployeManagement.Department.Department;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -55,5 +52,8 @@ public class Employee {
     private String email;
 
     private String phoneNo;
+
+    @Column(unique = true, nullable = false)
+    private String panCardNo;
 
 }

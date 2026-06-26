@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> ,
                                             JpaSpecificationExecutor<Employee> {
 
-
+    boolean existsByPanCardNo(String panCardNo);
 
 }

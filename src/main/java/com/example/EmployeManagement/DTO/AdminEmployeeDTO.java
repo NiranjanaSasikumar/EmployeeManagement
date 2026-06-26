@@ -23,5 +23,6 @@ public class AdminEmployeeDTO {
     private Double salary;
     private String email;
     private String phoneNo;
+    private String panCardNo;
 
 }

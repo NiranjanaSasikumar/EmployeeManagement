@@ -3,6 +3,7 @@ package com.example.EmployeManagement.EmployeeHome;
 import com.example.EmployeManagement.DTO.*;
 import com.example.EmployeManagement.Department.Department;
 import com.example.EmployeManagement.Department.DepartmentRepository;
+import com.example.EmployeManagement.Redis.EmployeePublisher;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,6 +27,7 @@ public class EmployeeService {
 
     private final EmployeeRepository repository;
     private final DepartmentRepository departmentRepository;
+    private final EmployeePublisher employeePublisher;
     private final EncryptionUtil encryptionUtil;
 
     private static final Logger logger =
@@ -51,6 +53,7 @@ public class EmployeeService {
         dto.setPhoneNo(
                 encryptionUtil.decrypt(
                         employee.getPhoneNo()));
+        dto.setPanCardNo(employee.getPanCardNo());
         return dto;
     }
 
@@ -68,6 +71,7 @@ public class EmployeeService {
         dto.setSalary(employee.getSalary());
         dto.setEmail(employee.getEmail());
         dto.setPhoneNo(employee.getPhoneNo());
+        dto.setPanCardNo(employee.getPanCardNo());
 
         return dto;
     }
@@ -175,6 +179,13 @@ public class EmployeeService {
                             + " already exists");
         }
 
+        if(repository.existsByPanCardNo(
+                employee.getPanCardNo())) {
+
+            throw new RuntimeException(
+                    "PAN Card Number already exists");
+        }
+
         Integer experience =
                 ExperienceUtil.calculateExperience(
                         employee.getDateOfJoining());
@@ -209,6 +220,8 @@ public class EmployeeService {
         Employee savedEmployee =
                 repository.save(employee);
 
+        employeePublisher.publishEmployeeCreated(savedEmployee.getId());
+
         logger.info("Employee created successfully with ID {}",
                 savedEmployee.getId());
 
@@ -238,6 +251,15 @@ public class EmployeeService {
                 throw new RuntimeException(
                         "Employee with ID "
                                 + employee.getId()
+                                + " already exists");
+            }
+
+            if(repository.existsByPanCardNo(
+                    employee.getPanCardNo())) {
+
+                throw new RuntimeException(
+                        "PAN Card Number "
+                                + employee.getPanCardNo()
                                 + " already exists");
             }
 
@@ -275,6 +297,10 @@ public class EmployeeService {
 
         List<Employee> savedEmployees =
                 repository.saveAll(employees);
+
+        for (Employee employee : savedEmployees) {
+            employeePublisher.publishEmployeeCreated(employee.getId());
+        }
 
         logger.info("{} employees created successfully",
                 savedEmployees.size());
