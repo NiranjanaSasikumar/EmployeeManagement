@@ -162,29 +162,36 @@ public class EmployeeService {
         logger.info("Phone number validation successful");
     }
 
+    private void validateEmployeeId(Integer employeeId) {
+
+        if (repository.existsById(employeeId)) {
+
+            logger.error("Employee with ID {} already exists", employeeId);
+
+            throw new RuntimeException(
+                    "Employee with ID "
+                            + employeeId
+                            + " already exists");
+        }
+    }
+
+    private void validatePanCardNo(String panCardNo) {
+
+        if (repository.existsByPanCardNo(panCardNo)) {
+            throw new RuntimeException(
+                    "PAN Card Number " + panCardNo + " already exists");
+        }
+    }
+
     public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
         logger.info("Received request to create employee with ID {}",
                 employee.getId());
 
 
-        if (repository.existsById(employee.getId())) {
+        validateEmployeeId(employee.getId());
 
-            logger.error("Employee with ID {} already exists",
-                    employee.getId());
-
-            throw new RuntimeException(
-                    "Employee with ID "
-                            + employee.getId()
-                            + " already exists");
-        }
-
-        if(repository.existsByPanCardNo(
-                employee.getPanCardNo())) {
-
-            throw new RuntimeException(
-                    "PAN Card Number already exists");
-        }
+        validatePanCardNo(employee.getPanCardNo());
 
         Integer experience =
                 ExperienceUtil.calculateExperience(
@@ -242,26 +249,9 @@ public class EmployeeService {
 
         for(Employee employee : employees) {
 
-            if(repository.existsById(employee.getId())) {
+            validateEmployeeId(employee.getId());
 
-                logger.error("Employee with id {} already exists",
-                        employee.getId());
-
-
-                throw new RuntimeException(
-                        "Employee with ID "
-                                + employee.getId()
-                                + " already exists");
-            }
-
-            if(repository.existsByPanCardNo(
-                    employee.getPanCardNo())) {
-
-                throw new RuntimeException(
-                        "PAN Card Number "
-                                + employee.getPanCardNo()
-                                + " already exists");
-            }
+            validatePanCardNo(employee.getPanCardNo());
 
             Integer experience =
                     ExperienceUtil.calculateExperience(
