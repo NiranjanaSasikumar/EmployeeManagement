@@ -288,9 +288,11 @@ public class EmployeeService {
         List<Employee> savedEmployees =
                 repository.saveAll(employees);
 
-        for (Employee employee : savedEmployees) {
-            employeePublisher.publishEmployeeCreated(employee.getId());
-        }
+        List<Integer> employeeIds = savedEmployees.stream()
+                .map(Employee::getId)
+                .toList();
+
+        employeePublisher.publishEmployeesCreated(employeeIds);
 
         logger.info("{} employees created successfully",
                 savedEmployees.size());
