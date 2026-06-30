@@ -2,12 +2,13 @@ package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.User.SignupRequest;
+import com.example.EmployeManagement.Util.ApiRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(ApiRoutes.AUTH)
 @RequiredArgsConstructor
 public class AuthenticationController {
 

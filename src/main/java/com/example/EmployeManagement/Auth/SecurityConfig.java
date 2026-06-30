@@ -1,6 +1,7 @@
 package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.ExceptionHandling.CustomAccessDeniedHandler;
+import com.example.EmployeManagement.Util.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,36 +32,36 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**")
+                        .requestMatchers(ApiRoutes.AUTH + "/**")
                         .permitAll()
 
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/employee/*/increment")
+                                ApiRoutes.EMPLOYEE + "/*/increment")
                         .hasRole("MANAGER")
 
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/employee/**",
-                                "/department/**")
+                                ApiRoutes.EMPLOYEE +"/**",
+                                ApiRoutes.DEPARTMENT +"/**")
                         .hasAnyRole("USER", "MANAGER", "ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/employee/**",
-                                "/department/**")
+                                ApiRoutes.EMPLOYEE +"/**",
+                                ApiRoutes.DEPARTMENT +"/**")
                         .hasAnyRole("MANAGER", "ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/employee/**",
-                                "/department/**")
+                                ApiRoutes.EMPLOYEE +"/**",
+                                ApiRoutes.DEPARTMENT +"/**")
                         .hasAnyRole("MANAGER", "ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/employee/**",
-                                "/department/**")
+                                ApiRoutes.EMPLOYEE +"/**",
+                                ApiRoutes.DEPARTMENT +"/**")
                         .hasAnyRole("MANAGER", "ADMIN")
 
                         .anyRequest()
