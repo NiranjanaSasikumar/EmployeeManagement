@@ -1,7 +1,6 @@
 package com.example.EmployeManagement.EmployeeHome;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -9,19 +8,16 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+@Slf4j
 @Component
 public class EncryptionUtil {
 
     private static final String SECRET_KEY =
             "1234567890123456";
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(
-                    EncryptionUtil.class);
-
     public String encrypt(String value) {
 
-        logger.info("Encrypting data");
+        log.info("Encrypting data");
 
         try {
 
@@ -53,7 +49,7 @@ public class EncryptionUtil {
 
         } catch (Exception e) {
 
-            logger.error(
+            log.error(
                     "Error occurred while encrypting data",
                     e);
 
@@ -65,7 +61,7 @@ public class EncryptionUtil {
 
     public String decrypt(String value) {
 
-        logger.info("Decrypting data");
+        log.info("Decrypting data");
 
         try {
 
@@ -97,7 +93,7 @@ public class EncryptionUtil {
 
         } catch (Exception e) {
 
-            logger.error(
+            log.error(
                     "Error occurred while decrypting data",
                     e);
 

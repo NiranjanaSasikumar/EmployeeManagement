@@ -1,12 +1,12 @@
 package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
+import com.example.EmployeManagement.User.Role;
 import com.example.EmployeManagement.User.SignupRequest;
 import com.example.EmployeManagement.User.User;
 import com.example.EmployeManagement.User.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -26,17 +27,14 @@ public class AuthenticationService {
     @Value("${jwt.expiry.minutes}")
     private long expiryMinutes;
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(AuthenticationService.class);
-
     public ApiResponse<String> signup(
             SignupRequest request) {
 
-        logger.info(
+        log.info(
                 "Signup request received for username: {}",
                 request.getUsername());
 
-        logger.info(
+        log.info(
                 "Checking if username already exists: {}",
                 request.getUsername());
 
@@ -44,7 +42,7 @@ public class AuthenticationService {
                 .findByUsername(request.getUsername())
                 .isPresent()) {
 
-            logger.error(
+            log.error(
                     "Signup failed. Username already exists: {}",
                     request.getUsername());
 
@@ -60,24 +58,24 @@ public class AuthenticationService {
                     "Role is required");
         }
 
-        String role = request.getRole().toUpperCase();
+        Role role;
 
-        if(!role.equals("ADMIN")
-                && !role.equals("MANAGER")
-                && !role.equals("USER")) {
-
+        try {
+            role = Role.valueOf(request.getRole().toUpperCase());
+        }
+        catch (IllegalArgumentException e) {
             throw new RuntimeException(
-                    "Invalid role");
+                    "Role must be ADMIN, MANAGER or USER");
         }
 
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(role)
                 .build();
         userRepository.save(user);
 
-        logger.info(
+        log.info(
                 "User registered successfully: {}",
                 request.getUsername());
 
@@ -92,7 +90,7 @@ public class AuthenticationService {
     public ApiResponse<Object> login(
             SignupRequest request){
 
-        logger.info(
+        log.info(
                 "Login request received for username: {}",
                 request.getUsername());
 
@@ -100,7 +98,7 @@ public class AuthenticationService {
                 .findByUsername(request.getUsername())
                 .orElseThrow(() -> {
 
-                    logger.error(
+                    log.error(
                             "Login failed. Username not found: {}",
                             request.getUsername());
 
@@ -112,7 +110,7 @@ public class AuthenticationService {
                 request.getPassword(),
                 user.getPassword())) {
 
-            logger.error(
+            log.error(
                     "Login failed. Invalid password for username: {}",
                     request.getUsername());
 
@@ -120,7 +118,7 @@ public class AuthenticationService {
                     "Invalid username or password");
         }
 
-        logger.info(
+        log.info(
                 "Login successful for username: {}",
                 request.getUsername());
 

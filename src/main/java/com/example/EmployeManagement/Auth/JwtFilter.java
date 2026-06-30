@@ -9,8 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.
         UsernamePasswordAuthenticationToken;
 
@@ -28,15 +27,13 @@ import org.springframework.web.filter.
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtFilter
         extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(JwtFilter.class);
 
     @Override
     protected void doFilterInternal(
@@ -47,13 +44,13 @@ public class JwtFilter
 
         String authHeader = request.getHeader("Authorization");
 
-        logger.info("Incoming request: {}", request.getRequestURI());
+        log.info("Incoming request: {}", request.getRequestURI());
 
         String token = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
 
-            logger.info("Authorization header received");
+            log.info("Authorization header received");
 
             token = authHeader.substring(7);
         }
@@ -62,17 +59,18 @@ public class JwtFilter
 
             try {
 
-                logger.info("Validating authentication token");
+                log.info("Validating authentication token");
 
                 if (!jwtUtil.validateToken(token)) {
                     throw new RuntimeException("Invalid Token");
                 }
 
-                logger.info("Token validated successfully");
+                log.info("Token validated successfully");
 
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token).toUpperCase();
-                logger.info("Role extracted from JWT: {}", role);
+
+                log.info("Role extracted from JWT: {}", role);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -87,11 +85,11 @@ public class JwtFilter
                         .getContext()
                         .setAuthentication(authentication);
 
-                logger.info("Authentication context set successfully");
+                log.info("Authentication context set successfully");
 
             } catch (Exception ex) {
 
-                logger.error(
+                log.error(
                         "Token validation failed: {}",
                         ex.getMessage());
 
@@ -116,6 +114,6 @@ public class JwtFilter
 
         filterChain.doFilter(request, response);
 
-        logger.info("Request processing completed");
+        log.info("Request processing completed");
     }
 }

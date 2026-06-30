@@ -1,12 +1,13 @@
 package com.example.EmployeManagement.Department;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
+import com.example.EmployeManagement.Util.ApiRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/department")
+@RequestMapping(ApiRoutes.DEPARTMENT)
 @RequiredArgsConstructor
 public class DepartmentController {
 

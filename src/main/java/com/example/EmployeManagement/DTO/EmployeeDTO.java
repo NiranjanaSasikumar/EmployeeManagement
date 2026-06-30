@@ -28,5 +28,6 @@ public class EmployeeDTO {
     private Integer experience;
     private String email;
     private String phoneNo;
+    private String panCardNo;
 
 }

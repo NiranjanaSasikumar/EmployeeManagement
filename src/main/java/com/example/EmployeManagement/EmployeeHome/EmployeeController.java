@@ -1,6 +1,7 @@
 package com.example.EmployeManagement.EmployeeHome;
 
 import com.example.EmployeManagement.DTO.*;
+import com.example.EmployeManagement.Util.ApiRoutes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/employee")
+@RequestMapping(ApiRoutes.EMPLOYEE)
 @Tag(name = "Employee Management", description = "APIs for managing employees")
 public class EmployeeController {
 

@@ -2,20 +2,16 @@ package com.example.EmployeManagement.Department;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DepartmentService {
     private final DepartmentRepository repository;
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(
-                    DepartmentService.class);
 
     private DepartmentDTO convertToDTO(
             Department department) {
@@ -35,14 +31,14 @@ public class DepartmentService {
     public ApiResponse<DepartmentDTO> createDepartment(
             Department department) {
 
-        logger.info(
+        log.info(
                 "Received request to create department: {}",
                 department.getName());
 
         if(repository.findByName(
                 department.getName()).isPresent()) {
 
-            logger.error(
+            log.error(
                     "Department already exists: {}",
                     department.getName());
 
@@ -53,7 +49,7 @@ public class DepartmentService {
         Department savedDepartment =
                 repository.save(department);
 
-        logger.info(
+        log.info(
                 "Department created successfully with ID {}",
                 savedDepartment.getId());
 
@@ -67,7 +63,7 @@ public class DepartmentService {
 
     public ApiResponse<List<DepartmentDTO>> getAllDepartments() {
 
-        logger.info(
+        log.info(
                 "Fetching all departments");
 
         List<DepartmentDTO> departments =
@@ -86,7 +82,7 @@ public class DepartmentService {
 
     public ApiResponse<DepartmentDTO> getDepartmentById(Integer id) {
 
-        logger.info(
+        log.info(
                 "Fetching department with ID {}",
                 id);
 
@@ -94,7 +90,7 @@ public class DepartmentService {
                 repository.findById(id)
                         .orElseThrow(() -> {
 
-                            logger.error(
+                            log.error(
                                     "Department not found with ID {}",
                                     id);
 
@@ -114,7 +110,7 @@ public class DepartmentService {
             Integer id,
             Department department) {
 
-        logger.info(
+        log.info(
                 "Updating department with ID {}",
                 id);
 
@@ -122,7 +118,7 @@ public class DepartmentService {
                 repository.findById(id)
                         .orElseThrow(() -> {
 
-                            logger.error(
+                            log.error(
                                     "Department not found with ID {}",
                                     id);
 
@@ -137,7 +133,7 @@ public class DepartmentService {
                 repository.save(
                         existingDepartment);
 
-        logger.info(
+        log.info(
                 "Department updated successfully");
 
         return new ApiResponse<>(
@@ -151,7 +147,7 @@ public class DepartmentService {
 
     public ApiResponse<String> deleteDepartment(Integer id) {
 
-        logger.info(
+        log.info(
                 "Deleting department with ID {}",
                 id);
 
@@ -159,7 +155,7 @@ public class DepartmentService {
                 repository.findById(id)
                         .orElseThrow(() -> {
 
-                            logger.error(
+                            log.error(
                                     "Department not found with ID {}",
                                     id);
 
@@ -169,7 +165,7 @@ public class DepartmentService {
 
         repository.delete(department);
 
-        logger.info(
+        log.info(
                 "Department deleted successfully");
 
         return new ApiResponse<>(

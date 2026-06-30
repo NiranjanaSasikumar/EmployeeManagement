@@ -1,9 +1,9 @@
 package com.example.EmployeManagement.Auth;
 
+import com.example.EmployeManagement.User.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -22,14 +23,11 @@ public class JwtUtil {
     @Value("${jwt.expiry.minutes}")
     private long expiryMinutes;
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(JwtUtil.class);
-
     public String generateToken(
             String username,
-            String role) {
+            Role role) {
 
-        logger.info(
+        log.info(
                 "Generating JWT token for user: {} with role: {}",
                 username,
                 role);
@@ -37,13 +35,13 @@ public class JwtUtil {
         SecretKey key = Keys.hmacShaKeyFor(
                 secretKey.getBytes(StandardCharsets.UTF_8));
 
-        logger.info(
+        log.info(
                 "JWT token will expire in {} minutes",
                 expiryMinutes);
 
         return Jwts.builder()
                 .subject(username)
-                .claim("role", role)
+                .claim("role", role.name())
                 .issuedAt(new Date())
                 .expiration(
                         Date.from(
@@ -58,7 +56,7 @@ public class JwtUtil {
 
     public String extractUsername(String token) {
 
-        logger.info("Extracting username from token");
+        log.info("Extracting username from token");
 
         SecretKey key = Keys.hmacShaKeyFor(
                 secretKey.getBytes(StandardCharsets.UTF_8));
@@ -73,7 +71,7 @@ public class JwtUtil {
 
     public String extractRole(String token) {
 
-        logger.info("Extracting role from token");
+        log.info("Extracting role from token");
 
         SecretKey key = Keys.hmacShaKeyFor(
                 secretKey.getBytes(StandardCharsets.UTF_8));
@@ -90,7 +88,7 @@ public class JwtUtil {
 
         try {
 
-            logger.info("Validating JWT token");
+            log.info("Validating JWT token");
 
             SecretKey key = Keys.hmacShaKeyFor(
                     secretKey.getBytes(StandardCharsets.UTF_8));
@@ -100,13 +98,13 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
 
-            logger.info("JWT token validated successfully");
+            log.info("JWT token validated successfully");
 
             return true;
 
         } catch (Exception e) {
 
-            logger.error(
+            log.error(
                     "JWT validation failed: {}",
                     e.getMessage()
             );

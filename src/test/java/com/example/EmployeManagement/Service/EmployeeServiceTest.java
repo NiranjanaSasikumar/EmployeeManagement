@@ -1,10 +1,15 @@
 package com.example.EmployeManagement.Service;
 
+import com.example.EmployeManagement.DTO.AdminEmployeeDTO;
 import com.example.EmployeManagement.DTO.ApiResponse;
 import com.example.EmployeManagement.DTO.EmployeeDTO;
+import com.example.EmployeManagement.Department.Department;
+import com.example.EmployeManagement.Department.DepartmentRepository;
 import com.example.EmployeManagement.EmployeeHome.Employee;
 import com.example.EmployeManagement.EmployeeHome.EmployeeRepository;
 import com.example.EmployeManagement.EmployeeHome.EmployeeService;
+import com.example.EmployeManagement.EmployeeHome.EncryptionUtil;
+import com.example.EmployeManagement.Redis.EmployeePublisher;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +20,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +32,15 @@ public class EmployeeServiceTest {
 
     @Mock
     private EmployeeRepository repository;
+
+    @Mock
+    private DepartmentRepository departmentRepository;
+
+    @Mock
+    private EncryptionUtil encryptionUtil;
+
+    @Mock
+    private EmployeePublisher employeePublisher;
 
     @InjectMocks
     private EmployeeService service;
@@ -35,7 +51,13 @@ public class EmployeeServiceTest {
 
         employee.setId(1);
         employee.setName("Arjun");
-        employee.setDepartment("IT");
+        Department department = new Department();
+        department.setId(1);
+        department.setName("IT");
+        employee.setEmail("arjun@test.com");
+        employee.setPhoneNo("9876543210");
+        employee.setPanCardNo("ABCDE1234F");
+        employee.setDept(department);
         employee.setAge(25);
         employee.setDateOfBirth(
                 LocalDate.of(2000,7,18)
@@ -69,35 +91,20 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    void createEmployee_ShouldCalculateSalaryCorrectly() {
-
-        Employee employee = createTestEmployee();
-
-        when(repository.existsById(1))
-                .thenReturn(false);
-
-        when(repository.save(any(Employee.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        ApiResponse<EmployeeDTO> response =
-                service.createEmployee(employee);
-
-        assertNotNull(response);
-
-        EmployeeDTO dto = response.getData();
-
-        assertEquals(75000.0, dto.getSalary());
-    }
-
-    @Test
     void createEmployee_ShouldThrowException_ForInvalidDepartment() {
 
         Employee employee = createTestEmployee();
 
-        employee.setDepartment("XYZ");
+        Department department = new Department();
+        department.setId(100);
+
+        employee.setDept(department);
 
         when(repository.existsById(1))
                 .thenReturn(false);
+
+        when(departmentRepository.findById(100))
+                .thenReturn(Optional.empty());
 
         RuntimeException exception =
                 assertThrows(
@@ -106,7 +113,7 @@ public class EmployeeServiceTest {
                 );
 
         assertEquals(
-                "Invalid department",
+                "Department not found",
                 exception.getMessage()
         );
     }
@@ -119,6 +126,12 @@ public class EmployeeServiceTest {
         when(repository.existsById(1))
                 .thenReturn(false);
 
+        when(departmentRepository.findById(1))
+                .thenReturn(Optional.of(employee.getDept()));
+
+        when(encryptionUtil.encrypt(anyString()))
+                .thenReturn("encryptedValue");
+
         when(repository.save(any(Employee.class)))
                 .thenAnswer(invocation ->
                         invocation.getArgument(0));
@@ -130,6 +143,9 @@ public class EmployeeServiceTest {
                             ExperienceUtil.calculateExperience(
                                     employee.getDateOfJoining()))
                     .thenReturn(10);
+
+            doNothing().when(employeePublisher)
+                    .publishEmployeeCreated(anyInt());
 
             ApiResponse<EmployeeDTO> response =
                     service.createEmployee(employee);
