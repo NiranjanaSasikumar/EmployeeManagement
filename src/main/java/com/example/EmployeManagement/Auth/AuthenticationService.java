@@ -1,6 +1,7 @@
 package com.example.EmployeManagement.Auth;
 
 import com.example.EmployeManagement.DTO.ApiResponse;
+import com.example.EmployeManagement.User.Role;
 import com.example.EmployeManagement.User.SignupRequest;
 import com.example.EmployeManagement.User.User;
 import com.example.EmployeManagement.User.UserRepository;
@@ -57,20 +58,20 @@ public class AuthenticationService {
                     "Role is required");
         }
 
-        String role = request.getRole().toUpperCase();
+        Role role;
 
-        if(!role.equals("ADMIN")
-                && !role.equals("MANAGER")
-                && !role.equals("USER")) {
-
+        try {
+            role = Role.valueOf(request.getRole().toUpperCase());
+        }
+        catch (IllegalArgumentException e) {
             throw new RuntimeException(
-                    "Invalid role");
+                    "Role must be ADMIN, MANAGER or USER");
         }
 
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(role)
                 .build();
         userRepository.save(user);
 

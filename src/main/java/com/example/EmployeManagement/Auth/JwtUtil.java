@@ -1,5 +1,6 @@
 package com.example.EmployeManagement.Auth;
 
+import com.example.EmployeManagement.User.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class JwtUtil {
 
     public String generateToken(
             String username,
-            String role) {
+            Role role) {
 
         log.info(
                 "Generating JWT token for user: {} with role: {}",
@@ -40,7 +41,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .subject(username)
-                .claim("role", role)
+                .claim("role", role.name())
                 .issuedAt(new Date())
                 .expiration(
                         Date.from(
