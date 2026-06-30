@@ -6,6 +6,7 @@ import com.example.EmployeManagement.Department.DepartmentRepository;
 import com.example.EmployeManagement.Redis.EmployeePublisher;
 import com.example.EmployeManagement.Util.ExperienceUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,9 +19,7 @@ import org.springframework.data.domain.Sort;
 import java.util.Comparator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
@@ -29,10 +28,6 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final EmployeePublisher employeePublisher;
     private final EncryptionUtil encryptionUtil;
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(EmployeeService.class);
-
 
     private EmployeeDTO convertToDTO(Employee employee) {
 
@@ -128,45 +123,45 @@ public class EmployeeService {
 
     private void validateEmail(String email) {
 
-        logger.info("Validating employee email");
+        log.info("Validating employee email");
 
         if (email == null ||
                 !email.matches(
                         "^[A-Za-z0-9+_.-]+@(.+)$")) {
 
-            logger.error(
+            log.error(
                     "Email validation failed for value: {}",
                     email);
 
             throw new RuntimeException(
                     "Invalid email format");
         }
-        logger.info("Email validation successful");
+        log.info("Email validation successful");
     }
 
     private void validatePhoneNo(String phoneNo) {
 
-        logger.info("Validating employee phone number");
+        log.info("Validating employee phone number");
 
         if (phoneNo == null ||
                 !phoneNo.matches(
                         "^[6-9][0-9]{9}$")) {
 
-            logger.error(
+            log.error(
                     "Phone number validation failed for value: {}",
                     phoneNo);
 
             throw new RuntimeException(
                     "Invalid phone number");
         }
-        logger.info("Phone number validation successful");
+        log.info("Phone number validation successful");
     }
 
     private void validateEmployeeId(Integer employeeId) {
 
         if (repository.existsById(employeeId)) {
 
-            logger.error("Employee with ID {} already exists", employeeId);
+            log.error("Employee with ID {} already exists", employeeId);
 
             throw new RuntimeException(
                     "Employee with ID "
@@ -185,7 +180,7 @@ public class EmployeeService {
 
     public ApiResponse<EmployeeDTO> createEmployee(Employee employee) {
 
-        logger.info("Received request to create employee with ID {}",
+        log.info("Received request to create employee with ID {}",
                 employee.getId());
 
 
@@ -229,7 +224,7 @@ public class EmployeeService {
 
         employeePublisher.publishEmployeeCreated(savedEmployee.getId());
 
-        logger.info("Employee created successfully with ID {}",
+        log.info("Employee created successfully with ID {}",
                 savedEmployee.getId());
 
         return new ApiResponse<>(
@@ -244,7 +239,7 @@ public class EmployeeService {
     public ApiResponse<List<EmployeeDTO>> createMultipleEmployees(
             List<Employee> employees) {
 
-        logger.info("Received request to create {} employees",
+        log.info("Received request to create {} employees",
                 employees.size());
 
         for(Employee employee : employees) {
@@ -294,7 +289,7 @@ public class EmployeeService {
 
         employeePublisher.publishEmployeesCreated(employeeIds);
 
-        logger.info("{} employees created successfully",
+        log.info("{} employees created successfully",
                 savedEmployees.size());
 
         List<EmployeeDTO> employeeDTOs =
@@ -316,7 +311,7 @@ public class EmployeeService {
                                              String sortBy,
                                              String direction) {
 
-        logger.info(
+        log.info(
                 "Fetching employees. Page: {}, Size: {}, Sort By: {}, Direction: {}",
                 page,
                 size,
@@ -333,7 +328,7 @@ public class EmployeeService {
 
         if(employees.isEmpty()) {
 
-            logger.error(
+            log.error(
                     "No employees found. Page: {}, Size: {}",
                     page,
                     size);
@@ -363,7 +358,7 @@ public class EmployeeService {
                         dtoPage.getSize()
                 );
 
-        logger.info(
+        log.info(
                 "Successfully fetched {} employees from page {}",
                 employees.getNumberOfElements(),
                 page);
@@ -386,7 +381,7 @@ public class EmployeeService {
                                         "Employee not found with id " + id
                                 ));
 
-        logger.info("Employee found with ID {}", id);
+        log.info("Employee found with ID {}", id);
 
         String role = getCurrentUserRole();
 
@@ -475,7 +470,7 @@ public class EmployeeService {
                             updatedEmployee.getPhoneNo()));
         }
 
-        logger.info("Employee updated successfully with ID {}", id);
+        log.info("Employee updated successfully with ID {}", id);
 
         Employee savedEmployee = repository.save(employee);
 
@@ -493,7 +488,7 @@ public class EmployeeService {
 
         repository.deleteById(id);
 
-        logger.info("Employee deleted successfully with ID {}", id);
+        log.info("Employee deleted successfully with ID {}", id);
 
         return new ApiResponse<>(
                 "SUCCESS",
@@ -511,7 +506,7 @@ public class EmployeeService {
             Integer age,
             List<String> sortBy) {
 
-        logger.info(
+        log.info(
                 "Search request received. Name: {}, Department: {}, Age: {}",
                 name,
                 department,
@@ -527,7 +522,7 @@ public class EmployeeService {
                     EmployeeSpecification.hasName(
                             name));
 
-            logger.info(
+            log.info(
                     "Searching employees by name: {}",
                     name);
 
@@ -539,7 +534,7 @@ public class EmployeeService {
                     EmployeeSpecification.hasDepartment(
                             department));
 
-            logger.info(
+            log.info(
                     "Searching employees by department: {}",
                     department);
 
@@ -552,7 +547,7 @@ public class EmployeeService {
                             age));
 
 
-            logger.info(
+            log.info(
                     "Searching employees by age: {}",
                     age);
 
@@ -563,7 +558,7 @@ public class EmployeeService {
                  && department == null
                  && age == null){
 
-            logger.error(
+            log.error(
                     "Search failed. No search parameter provided");
 
             throw new RuntimeException(
@@ -653,14 +648,14 @@ public class EmployeeService {
 
         if(employees.isEmpty()) {
 
-            logger.error(
+            log.error(
                     "No employees found for the given search criteria");
 
             throw new RuntimeException(
                     "No employees found for the given search criteria");
         }
 
-        logger.info(
+        log.info(
                 "{} employees found",
                 employees.size());
 
@@ -694,7 +689,7 @@ public class EmployeeService {
             Integer id,
             SalaryIncrementRequestDTO request) {
 
-        logger.info(
+        log.info(
                 "Salary increment requested for employee id {}",
                 id);
 
@@ -722,7 +717,7 @@ public class EmployeeService {
                         newSalary
                 );
 
-        logger.info(
+        log.info(
                 "Salary updated successfully for employee id {}. Old salary: {}, New salary: {}",
                 id,
                 oldSalary,

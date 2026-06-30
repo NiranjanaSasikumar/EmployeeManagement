@@ -1,8 +1,7 @@
 package com.example.EmployeManagement.EmployeeHome;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -10,15 +9,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EmployeeScheduler {
 
     private final EmployeeRepository repository;
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(EmployeeScheduler.class);
-
 
     @Value("${employee.salary.increment.percentage}")
     private double annualIncrementPercentage;
@@ -26,7 +22,7 @@ public class EmployeeScheduler {
     @Scheduled(cron = "${employee.scheduler.cron}")
     public void updateExperienceAndSalary() {
 
-        logger.info(
+        log.info(
                 "Running yearly employee update scheduler");
 
         List<Employee> employees =
@@ -56,7 +52,7 @@ public class EmployeeScheduler {
             }
         }
 
-        logger.info(
+        log.info(
                 "Employee update scheduler completed");
     }
 
@@ -81,7 +77,7 @@ public class EmployeeScheduler {
 
         repository.save(employee);
 
-        logger.info(
+        log.info(
                 "Updated employee {}. Experience: {}, Salary: {}",
                 employee.getId(),
                 employee.getExperience(),
